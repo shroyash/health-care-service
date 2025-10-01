@@ -1,0 +1,12 @@
+# Base image with Maven + JDK
+FROM maven:3.9.4-eclipse-temurin-21
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Expose dev port
+EXPOSE 8004
+
+# Run Spring Boot in dev mode (hot reload)
+CMD ["mvn", "spring-boot:run"]
