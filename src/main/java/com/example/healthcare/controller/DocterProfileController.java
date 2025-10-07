@@ -1,6 +1,5 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.DoctorProfileCreateDto;
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.utils.JwtUtils;
@@ -11,15 +10,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/doctor-profile")
 @AllArgsConstructor
-public class DoctorProfileController {
+public class DocterProfileController {
 
     private final DoctorProfileService doctorProfileService;
     private final JwtUtils jwtUtils;
 
     @PostMapping("/create-doctor-profile")
     public ResponseEntity<String> createDoctorProfile(
-            @RequestBody DoctorProfileCreateDto doctorProfileCreateDto) {
-        doctorProfileService.createDoctorProfile(doctorProfileCreateDto);
+            @RequestBody String token) {
+        doctorProfileService.createDoctorProfile(token);
         return ResponseEntity.ok("Doctor profile created successfully!");
     }
 

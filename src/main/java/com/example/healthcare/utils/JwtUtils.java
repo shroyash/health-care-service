@@ -8,6 +8,7 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.List;
 
 public class JwtUtils {
 
@@ -30,21 +31,35 @@ public class JwtUtils {
         }
     }
 
-    public static Long extractUserIdFromToken(String token) {
+    private static Claims parseToken(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
+            return Jwts.parserBuilder()
                     .setSigningKey(getPublicKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
-            return Long.parseLong(claims.getSubject());
-
         } catch (JwtException e) {
-            // Invalid/expired token case
             throw new JwtException("Invalid or expired JWT token", e);
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("JWT subject is not a valid user ID", e);
         }
+    }
+
+    public static Long extractUserIdFromToken(String token) {
+        Object idObj = parseToken(token).get("id");
+        if (idObj instanceof Number) {
+            return ((Number) idObj).longValue();
+        } else if (idObj instanceof String) {
+            return Long.parseLong((String) idObj);
+        } else {
+            throw new RuntimeException("JWT 'id' claim is missing or invalid");
+        }
+    }
+
+    public static String extractEmailFromToken(String token) {
+        return parseToken(token).get("email", String.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<String> extractRolesFromToken(String token) {
+        return parseToken(token).get("roles", List.class);
     }
 }

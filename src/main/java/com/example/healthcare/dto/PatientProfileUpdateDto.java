@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-@Builder
 @Data
+@Builder
 @AllArgsConstructor
-public class DoctorProfileCreateDto {
-    private long doctorId;
-    private String userName;
+public class PatientProfileUpdateDto {
+    private String fullname;
     private String email;
+    private String contactNumber;
 }

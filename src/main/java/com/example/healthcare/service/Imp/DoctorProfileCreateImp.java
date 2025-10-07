@@ -1,10 +1,11 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.DoctorProfileCreateDto;
+
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.service.DoctorProfileService;
+import com.example.healthcare.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,32 +16,29 @@ public class DoctorProfileCreateImp implements DoctorProfileService {
     private final DoctorProfileRepository doctorProfileRepository;
 
     @Override
-    public void createDoctorProfile(DoctorProfileCreateDto dto) {
+    public void createDoctorProfile(String token) {
+        Long userId = JwtUtils.extractUserIdFromToken(token);
+        String email = JwtUtils.extractEmailFromToken(token);
 
-        // Check if profile already exists
-        doctorProfileRepository.findByDoctorId(dto.getDoctorId())
-                .ifPresent(profile -> {
-                    throw new RuntimeException("Doctor profile already exists");
-                });
+        boolean exists = doctorProfileRepository.findByUserId(userId).isPresent();
+        if (!exists) {
+            DoctorProfile profile = DoctorProfile.builder()
+                    .userId(userId)
+                    .fullName("Unknown")
+                    .email(email != null ? email : "unknown@example.com")
+                    .specialization(null)
+                    .yearsOfExperience(0)
+                    .contactNumber(null)
+                    .build();
 
-        // Create and save new profile
-        DoctorProfile profile = DoctorProfile.builder()
-                .doctorId(dto.getDoctorId())
-                .fullName(dto.getUserName())
-                .email(dto.getEmail())
-                .specialization(null)
-                .yearsOfExperience(0)
-                .contactNumber(null)
+            doctorProfileRepository.save(profile);
+        }
 
-                .build();
-
-        doctorProfileRepository.save(profile);
     }
 
     @Override
-    public void updateDoctorProfile(Long doctorId, DoctorProfileUpdateDto dto) {
-
-        DoctorProfile profile = doctorProfileRepository.findByDoctorId(doctorId)
+    public void updateDoctorProfile(Long userId, DoctorProfileUpdateDto dto) {
+        DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
 
         profile.setSpecialization(dto.getSpecialization());

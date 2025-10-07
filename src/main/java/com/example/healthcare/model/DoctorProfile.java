@@ -14,7 +14,7 @@ public class DoctorProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long doctorProfileId;
 
-    private Long doctorId;
+    private Long userId;
     private String fullName;
     private String email;
     private String specialization;
