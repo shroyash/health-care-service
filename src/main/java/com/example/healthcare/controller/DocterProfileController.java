@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 public class DocterProfileController {
 
     private final DoctorProfileService doctorProfileService;
-    private final JwtUtils jwtUtils;
 
     @PostMapping("/create-doctor-profile")
     public ResponseEntity<String> createDoctorProfile(

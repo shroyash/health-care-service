@@ -3,6 +3,8 @@ package com.example.healthcare.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -21,5 +23,8 @@ public class DoctorProfile {
     private int yearsOfExperience;
     private String workingAT;
     private String contactNumber;
+
+    @OneToMany(mappedBy = "doctorProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DoctorSchedule> schedules;
 
 }
