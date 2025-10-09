@@ -2,12 +2,15 @@ package com.example.healthcare.service.Imp;
 
 
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
+import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -39,7 +42,7 @@ public class DoctorProfileCreateImp implements DoctorProfileService {
     @Override
     public void updateDoctorProfile(Long userId, DoctorProfileUpdateDto dto) {
         DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
         profile.setSpecialization(dto.getSpecialization());
         profile.setYearsOfExperience(dto.getYearsOfExperience());
@@ -47,6 +50,11 @@ public class DoctorProfileCreateImp implements DoctorProfileService {
         profile.setEmail(dto.getEmail());
 
         doctorProfileRepository.save(profile);
+    }
+
+    @Override
+    public List<DoctorProfile> getAllDoctorProfile() {
+        return doctorProfileRepository.findAll();
     }
 
 

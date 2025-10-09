@@ -1,7 +1,7 @@
 package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorScheduleDto;
-import com.example.healthcare.exceptions.DoctorProfileNotFoundException;
+import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.DoctorSchedule;
 import com.example.healthcare.repository.DoctorProfileRepository;
@@ -20,7 +20,7 @@ public class ScheduleServiceImp {
 
     public void saveWeeklySchedule(DoctorScheduleDto dto) {
         DoctorProfile doctor = doctorProfileRepository.findById(dto.getDoctorProfileId())
-                .orElseThrow(() -> new DoctorProfileNotFoundException("Doctor not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
 
         // Remove old schedules if needed (optional)
         doctor.getSchedules().clear();

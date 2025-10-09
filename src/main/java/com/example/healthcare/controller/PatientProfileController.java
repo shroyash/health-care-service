@@ -1,34 +1,36 @@
 package com.example.healthcare.controller;
 
+import com.example.healthcare.dto.ApiResponse;
 import com.example.healthcare.dto.PatientProfileUpdateDto;
 import com.example.healthcare.service.PatientProfileService;
 import com.example.healthcare.utils.JwtUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/patient-profile")
+@RequestMapping("/api/patient-profiles")
 @AllArgsConstructor
 public class PatientProfileController {
 
     private final PatientProfileService patientProfileService;
 
-    // Create patient profile
-    @PostMapping("/create")
-    public ResponseEntity<String> createPatientProfile(@RequestBody String token) {
+    @PostMapping
+    public String createPatientProfile(@RequestBody String token) {
         patientProfileService.createPatientProfile(token);
-        return ResponseEntity.ok("Patient profile created successfully!");
+        return "Patient profile created successfully!";
     }
 
-    // Update patient profile
-    @PutMapping("/update")
-    public ResponseEntity<String> updatePatientProfile(
+
+    @PutMapping
+    public ResponseEntity<ApiResponse> updatePatientProfile(
             @RequestBody PatientProfileUpdateDto dto,
             @CookieValue(name = "jwt", required = true) String token) {
 
         Long patientId = JwtUtils.extractUserIdFromToken(token);
         patientProfileService.updatePatientProfile(patientId, dto);
-        return ResponseEntity.ok("Patient profile updated successfully!");
+        ApiResponse<Void> response = new ApiResponse<>(true, "Patient profile created successfully!", null);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

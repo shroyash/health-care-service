@@ -2,6 +2,7 @@ package com.example.healthcare.service.Imp;
 
 
 import com.example.healthcare.dto.PatientProfileUpdateDto;
+import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.PatientProfile;
 import com.example.healthcare.repository.PatientProfileRepository;
 import com.example.healthcare.service.PatientProfileService;
@@ -36,7 +37,7 @@ public class PatientProfileCreateImp implements PatientProfileService {
     @Override
     public void updatePatientProfile(Long userId, PatientProfileUpdateDto dto) {
         PatientProfile profile = patientProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Patient profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
         profile.setFullName(dto.getFullname());
         profile.setContactNumber(dto.getContactNumber());
