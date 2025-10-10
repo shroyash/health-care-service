@@ -22,15 +22,14 @@ public class PatientProfileController {
         return "Patient profile created successfully!";
     }
 
-
     @PutMapping
-    public ResponseEntity<ApiResponse> updatePatientProfile(
+    public ResponseEntity<ApiResponse<?>> updatePatientProfile(
             @RequestBody PatientProfileUpdateDto dto,
             @CookieValue(name = "jwt", required = true) String token) {
 
         Long patientId = JwtUtils.extractUserIdFromToken(token);
         patientProfileService.updatePatientProfile(patientId, dto);
         ApiResponse<Void> response = new ApiResponse<>(true, "Patient profile created successfully!", null);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
