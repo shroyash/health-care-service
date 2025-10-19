@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface DoctorProfileRepository extends JpaRepository<DoctorProfile,Long > {
     Optional<DoctorProfile> findByUserId(Long doctorId);
+    Optional<DoctorProfile> findByDoctorProfileId(Long docterProfileId);
     List<DoctorProfile> findBySpecialization(String specialization);
     List<DoctorProfile> findByYearsOfExperienceBetween(int start, int end);
     List<DoctorProfile> findByYearsOfExperienceGreaterThanEqual(int years);

@@ -17,7 +17,7 @@ public class PatientProfileController {
     private final PatientProfileService patientProfileService;
 
     @PostMapping
-    public String createPatientProfile(@RequestBody String token) {
+    public String createPatientProfile(@RequestHeader("Authorization") String token) {
         patientProfileService.createPatientProfile(token);
         return "Patient profile created successfully!";
     }

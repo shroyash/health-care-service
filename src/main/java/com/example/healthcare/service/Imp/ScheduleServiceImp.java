@@ -20,7 +20,7 @@ public class ScheduleServiceImp implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     public void saveWeeklySchedule(DoctorScheduleDto dto) {
-        DoctorProfile doctor = doctorProfileRepository.findById(dto.getDoctorProfileId())
+        DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileId(dto.getDoctorProfileId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
 
         // Remove old schedules if needed (optional)
@@ -47,7 +47,7 @@ public class ScheduleServiceImp implements ScheduleService {
 
     @Override
     public List<DoctorSchedule> getDoctorSchedule(Long doctorProfileId) {
-        List<DoctorSchedule> doctorSchedules = scheduleRepository.findByDoctorProfileId(doctorProfileId);
+        List<DoctorSchedule> doctorSchedules = scheduleRepository.findByDoctorProfileDoctorProfileId(doctorProfileId);
 
         if (doctorSchedules.isEmpty()) {
             throw new ResourceNotFoundException("No schedules found for doctor profile id: " + doctorProfileId);
