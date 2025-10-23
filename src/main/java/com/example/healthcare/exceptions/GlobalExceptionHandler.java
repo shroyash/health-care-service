@@ -1,14 +1,18 @@
 package com.example.healthcare.exceptions;
 
 
+import com.example.healthcare.dto.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     // ----------------- Unauthorized -----------------
@@ -93,5 +97,31 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @ExceptionHandler(InvocationTargetException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvocationTargetException(
+            InvocationTargetException ex, WebRequest request) {
+
+        log.error("InvocationTargetException occurred", ex);
+
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            log.error("Root cause: {}", cause.getMessage(), cause);
+            ApiResponse<Object> response = new ApiResponse<>(
+                    false,
+                    "Error: " + cause.getMessage(),
+                    null
+            );
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        ApiResponse<Object> response = new ApiResponse<>(
+                false,
+                "Invocation error occurred",
+                null
+        );
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

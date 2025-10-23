@@ -1,10 +1,7 @@
 package com.example.healthcare.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -25,10 +22,15 @@ public class DoctorSchedule {
     private boolean available;
     private boolean isLocked = false;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id", nullable = false)
+    @ToString.Exclude  // Prevent circular reference issues
+    @EqualsAndHashCode.Exclude
     private DoctorProfile doctorProfile;
 
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 }

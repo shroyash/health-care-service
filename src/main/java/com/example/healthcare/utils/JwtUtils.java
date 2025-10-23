@@ -73,8 +73,11 @@ public class JwtUtils {
     }
 
     public static String extractEmailFromToken(String token) {
-        logger.debug("[JwtUtils] Extracting email from token");
         return parseToken(token).get("email", String.class);
+    }
+
+    public static String extractUserNameFromToken(String token) {
+        return parseToken(token).get("username", String.class);
     }
 
     @SuppressWarnings("unchecked")

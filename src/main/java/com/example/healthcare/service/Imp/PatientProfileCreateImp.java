@@ -8,10 +8,12 @@ import com.example.healthcare.repository.PatientProfileRepository;
 import com.example.healthcare.service.PatientProfileService;
 import com.example.healthcare.utils.JwtUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PatientProfileCreateImp implements PatientProfileService {
 
     private final PatientProfileRepository patientProfileRepository;
@@ -19,16 +21,18 @@ public class PatientProfileCreateImp implements PatientProfileService {
     @Override
     public void createPatientProfile(String token) {
         Long userId = JwtUtils.extractUserIdFromToken(token);
+        String userName = JwtUtils.extractUserNameFromToken(token);
         String email = JwtUtils.extractEmailFromToken(token);
 
         boolean exists = patientProfileRepository.findByUserId(userId).isPresent();
         if (!exists) {
             PatientProfile profile = PatientProfile.builder()
                     .userId(userId)
-                    .fullName("Unknown")
+                    .fullName(userName)
                     .email(email)
                     .contactNumber(null)
                     .build();
+            log.info("patient profile:{}", profile);
 
             patientProfileRepository.save(profile);
         }
