@@ -2,6 +2,7 @@ package com.example.healthcare.controller;
 
 import com.example.healthcare.dto.ApiResponse;
 import com.example.healthcare.dto.DoctorScheduleDto;
+import com.example.healthcare.dto.DoctorScheduleResponseDto;
 import com.example.healthcare.model.DoctorSchedule;
 import com.example.healthcare.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +33,12 @@ public class ScheduleController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DoctorSchedule>>> getDoctorSchedule(
+    public ResponseEntity<ApiResponse<DoctorScheduleResponseDto>> getDoctorSchedule(
             @Param("doctorProfileId") Long doctorProfileId) {
 
-        List<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(doctorProfileId);
+        DoctorScheduleResponseDto schedules = scheduleService.getDoctorScheduleWithDetails(doctorProfileId);
 
-        ApiResponse<List<DoctorSchedule>> response = ApiResponse.<List<DoctorSchedule>>builder()
+        ApiResponse<DoctorScheduleResponseDto> response = ApiResponse.<DoctorScheduleResponseDto>builder()
                 .status(true)
                 .message("Doctor schedules fetched successfully")
                 .data(schedules)

@@ -1,6 +1,7 @@
 package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorScheduleDto;
+import com.example.healthcare.dto.DoctorScheduleResponseDto;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.DoctorSchedule;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -88,24 +90,43 @@ public class ScheduleServiceImp implements ScheduleService {
         }
     }
 
-    @Override
-    public List<DoctorSchedule> getDoctorSchedule(Long doctorProfileId) {
+    @Transactional(readOnly = true)
+    public DoctorScheduleResponseDto getDoctorScheduleWithDetails(Long doctorProfileId) {
         try {
-            log.info("Fetching schedules for doctor: {}", doctorProfileId);
+            DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileId(doctorProfileId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorProfileId));
 
-            List<DoctorSchedule> doctorSchedules = scheduleRepository.findByDoctorProfileDoctorProfileId(doctorProfileId);
+            // Convert schedules to DTO
+            List<DoctorScheduleResponseDto.ScheduleInfo> scheduleInfoList = doctor.getSchedules().stream()
+                    .map(schedule -> DoctorScheduleResponseDto.ScheduleInfo.builder()
+                            .scheduleId(schedule.getId())
+                            .dayOfWeek(schedule.getDayOfWeek())
+                            .startTime(schedule.getStartTime())
+                            .endTime(schedule.getEndTime())
+                            .available(schedule.isAvailable())
+                            .isLocked(schedule.isLocked())
+                            .createdAt(schedule.getCreatedAt())
+                            .updatedAt(schedule.getUpdatedAt())
+                            .build())
+                    .collect(Collectors.toList());
 
-            if (doctorSchedules.isEmpty()) {
-                log.warn("No schedules found for doctor: {}", doctorProfileId);
-                throw new ResourceNotFoundException("No schedules found for doctor profile id: " + doctorProfileId);
-            }
+            // Build response DTO
+            DoctorScheduleResponseDto response = DoctorScheduleResponseDto.builder()
+                    .doctorProfileId(doctor.getDoctorProfileId())
+                    .doctorName(doctor.getFullName())
+                    .email(doctor.getEmail())
+                    .specialization(doctor.getSpecialization())
+                    .contactNumber(doctor.getContactNumber())
+                    .schedules(scheduleInfoList)
+                    .build();
+            return response;
 
-            log.info("Found {} schedules for doctor: {}", doctorSchedules.size(), doctorProfileId);
-            return doctorSchedules;
-
+        } catch (ResourceNotFoundException e) {
+            log.error("Doctor not found: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error fetching schedules for doctor {}: {}", doctorProfileId, e.getMessage(), e);
-            throw e;
+            throw new RuntimeException("Error fetching schedules: " + e.getMessage(), e);
         }
     }
 }
