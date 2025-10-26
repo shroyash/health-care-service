@@ -10,6 +10,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class PatientProfileUpdateDto {
     private String fullname;
-    private String email;
     private String contactNumber;
 }

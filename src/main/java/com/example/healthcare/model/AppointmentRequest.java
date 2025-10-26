@@ -1,7 +1,6 @@
 package com.example.healthcare.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,8 +16,12 @@ public class AppointmentRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long patientId;     // Who requested
-    private Long doctorId;      // For which doctor
+    private Long patientId;
+    private String patientFullName; // Who requested
+
+    private Long doctorId;
+    private String doctorFullName; // For which doctor
+
     private String status;      // PENDING, CONFIRMED, REJECTED
     private String notes;       // patient message
 

@@ -43,10 +43,11 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
         DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
+        profile.setFullName(dto.getFullName());
         profile.setSpecialization(dto.getSpecialization());
         profile.setYearsOfExperience(dto.getYearsOfExperience());
         profile.setContactNumber(dto.getContactNumber());
-        profile.setEmail(dto.getEmail());
+        profile.setWorkingAT(dto.getWorkingAT());
 
         doctorProfileRepository.save(profile);
     }
