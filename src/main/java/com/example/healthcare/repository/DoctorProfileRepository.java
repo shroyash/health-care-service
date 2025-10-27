@@ -14,5 +14,6 @@ public interface DoctorProfileRepository extends JpaRepository<DoctorProfile,Lon
     List<DoctorProfile> findBySpecialization(String specialization);
     List<DoctorProfile> findByYearsOfExperienceBetween(int start, int end);
     List<DoctorProfile> findByYearsOfExperienceGreaterThanEqual(int years);
+    long count();
 }
 
