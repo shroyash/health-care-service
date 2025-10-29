@@ -81,6 +81,31 @@ public class DocterProfileController {
 
         return ResponseEntity.ok(response);
     }
+    @PostMapping("/{doctorId}/suspend")
+    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> suspendDoctor(@PathVariable Long doctorId) {
+        DoctorProfileResponseDto doctor = doctorProfileService.suspendDoctor(doctorId);
+
+        ApiResponse<DoctorProfileResponseDto> response = new ApiResponse<>(
+                true,
+                "Doctor suspended successfully",
+                doctor
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{doctorId}/restore")
+    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> restoreDoctor(@PathVariable Long doctorId) {
+        DoctorProfileResponseDto doctor = doctorProfileService.restoreDoctor(doctorId);
+
+        ApiResponse<DoctorProfileResponseDto> response = new ApiResponse<>(
+                true,
+                "Doctor restored successfully",
+                doctor
+        );
+
+        return ResponseEntity.ok(response);
+    }
 
 
 

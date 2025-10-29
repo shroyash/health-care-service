@@ -24,4 +24,5 @@ public class PatientProfile {
     private String fullName;
     private String email;
     private String contactNumber;
+    private String status;
 }

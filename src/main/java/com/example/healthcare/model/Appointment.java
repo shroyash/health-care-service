@@ -34,9 +34,9 @@ public class Appointment {
     private String meetingLink;
 
     @Enumerated(EnumType.STRING)
-    private AppointmentStatus status; // PENDING, CONFIRMED, CANCELLED, COMPLETED
+    private AppointmentStatus status;
 
-    private String notesReport;
+    private String checkupType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

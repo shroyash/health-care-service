@@ -32,6 +32,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                     .specialization(null)
                     .yearsOfExperience(0)
                     .contactNumber(null)
+                    .status("active") // default status
                     .build();
 
             doctorProfileRepository.save(profile);
@@ -55,10 +56,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     @Override
     public List<DoctorProfileResponseDto> getAllDoctorProfiles() {
         List<DoctorProfile> doctors = doctorProfileRepository.findAll();
-
-        return doctors.stream()
-                .map(this::mapToDto)
-                .toList();
+        return doctors.stream().map(this::mapToDto).toList();
     }
 
     @Override
@@ -69,9 +67,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
             throw new ResourceNotFoundException("No doctors found with specialization: " + specialization);
         }
 
-        return doctors.stream()
-                .map(this::mapToDto)
-                .toList();
+        return doctors.stream().map(this::mapToDto).toList();
     }
 
     @Override
@@ -87,12 +83,30 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
             throw new ResourceNotFoundException("No doctors found for experience level: " + level);
         }
 
-        return doctors.stream()
-                .map(this::mapToDto)
-                .toList();
+        return doctors.stream().map(this::mapToDto).toList();
     }
 
-    // Helper method to map entity to DTO
+    @Override
+    public DoctorProfileResponseDto suspendDoctor(Long doctorId) {
+        DoctorProfile profile = doctorProfileRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
+        profile.setStatus("suspended");
+        doctorProfileRepository.save(profile);
+        return mapToDto(profile);
+    }
+
+    @Override
+    public DoctorProfileResponseDto restoreDoctor(Long doctorId) {
+        DoctorProfile profile = doctorProfileRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
+        profile.setStatus("active");
+        doctorProfileRepository.save(profile);
+        return mapToDto(profile);
+    }
+
+
+
+    // ----------------- Helper -----------------
     private DoctorProfileResponseDto mapToDto(DoctorProfile doctor) {
         return DoctorProfileResponseDto.builder()
                 .doctorProfileId(doctor.getDoctorProfileId())

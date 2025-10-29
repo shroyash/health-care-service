@@ -1,6 +1,6 @@
 package com.example.healthcare.service.Imp;
 
-
+import com.example.healthcare.dto.PatientProfileDTO;
 import com.example.healthcare.dto.PatientProfileUpdateDto;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.PatientProfile;
@@ -10,6 +10,9 @@ import com.example.healthcare.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -31,8 +34,9 @@ public class PatientProfileCreateImp implements PatientProfileService {
                     .fullName(userName)
                     .email(email)
                     .contactNumber(null)
+                    .status("active")
                     .build();
-            log.info("patient profile:{}", profile);
+            log.info("Created patient profile: {}", profile);
 
             patientProfileRepository.save(profile);
         }
@@ -48,4 +52,52 @@ public class PatientProfileCreateImp implements PatientProfileService {
 
         patientProfileRepository.save(profile);
     }
+
+    @Override
+    public List<PatientProfileDTO> getAllPatients() {
+        List<PatientProfile> patients = patientProfileRepository.findAll();
+        return patients.stream()
+                .map(patient -> PatientProfileDTO.builder()
+                        .patientId(patient.getPatientProfileId())
+                        .fullName(patient.getFullName())
+                        .email(patient.getEmail())
+                        .contactNumber(patient.getContactNumber())
+                        .build()
+                )
+                .collect(Collectors.toList());
+    }
+
+
+    // Service layer
+    public PatientProfileDTO suspendPatient(Long patientId) {
+        PatientProfile profile = patientProfileRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+        profile.setStatus("suspended"); // mark as suspended
+        patientProfileRepository.save(profile);
+        log.info("Suspended patient account: {}", patientId);
+        return mapToDto(profile); // convert entity to DTO
+    }
+
+    public PatientProfileDTO restorePatient(Long patientId) {
+        PatientProfile profile = patientProfileRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+        profile.setStatus("active");
+        patientProfileRepository.save(profile);
+        log.info("Restored patient account: {}", patientId);
+        return mapToDto(profile); // convert entity to DTO
+    }
+
+    // Helper method to map entity to DTO
+    private PatientProfileDTO mapToDto(PatientProfile profile) {
+        return PatientProfileDTO.builder()
+                .patientId(profile.getPatientProfileId())
+                .fullName(profile.getFullName())
+                .email(profile.getEmail())
+                .contactNumber(profile.getContactNumber())
+                .status(profile.getStatus())
+                .build();
+    }
+
+
+
 }

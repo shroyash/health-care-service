@@ -53,4 +53,6 @@ public class DoctorProfile {
     @EqualsAndHashCode.Exclude
     @Builder.Default
     private List<DoctorSchedule> schedules = new ArrayList<>();
+
+    private String status;
 }

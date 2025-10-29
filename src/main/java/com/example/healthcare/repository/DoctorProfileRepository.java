@@ -1,5 +1,6 @@
 package com.example.healthcare.repository;
 
+import com.example.healthcare.dto.DoctorProfileResponseDto;
 import com.example.healthcare.model.DoctorProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

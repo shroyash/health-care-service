@@ -32,4 +32,21 @@ public class PatientProfileController {
         ApiResponse<Void> response = new ApiResponse<>(true, "Patient profile created successfully!", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    // Suspend a patient
+    @PutMapping("/suspend/{patientId}")
+    public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable Long patientId) {
+        var updatedPatient = patientProfileService.suspendPatient(patientId);
+        ApiResponse<?> response = new ApiResponse<>(true, "Patient suspended successfully", updatedPatient);
+        return ResponseEntity.ok(response);
+    }
+
+    // Restore a suspended patient
+    @PutMapping("/restore/{patientId}")
+    public ResponseEntity<ApiResponse<?>> restorePatient(@PathVariable Long patientId) {
+        var updatedPatient = patientProfileService.restorePatient(patientId);
+        ApiResponse<?> response = new ApiResponse<>(true, "Patient restored successfully", updatedPatient);
+        return ResponseEntity.ok(response);
+    }
+
 }
