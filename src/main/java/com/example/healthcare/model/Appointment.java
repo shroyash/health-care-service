@@ -23,7 +23,7 @@ public class Appointment {
     private DoctorProfile doctor;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "patient_id")
     private PatientProfile patient;
 
     @ManyToOne

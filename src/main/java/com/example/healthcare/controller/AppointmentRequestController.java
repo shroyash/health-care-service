@@ -1,8 +1,6 @@
 package com.example.healthcare.controller;
 
 import com.example.healthcare.dto.ApiResponse;
-import com.example.healthcare.dto.AppointmentDoctorReceiveResponseDto;
-import com.example.healthcare.dto.AppointmentPatientRequestResponseDto;
 import com.example.healthcare.dto.AppointmentRequestDto;
 import com.example.healthcare.service.AppointmentRequestService;
 import com.example.healthcare.utils.JwtUtils;
@@ -37,13 +35,13 @@ public class AppointmentRequestController {
     }
 
     @GetMapping("/doctor")
-    public ResponseEntity<ApiResponse<List<AppointmentPatientRequestResponseDto>>> getRequestsForDoctor(
+    public ResponseEntity<ApiResponse<List<AppointmentRequestDto>>> getRequestsForDoctor(
             @CookieValue(name = "jwt", required = true) String token) {
 
-        long doctorId = JwtUtils.extractUserIdFromToken(token);
-        List<AppointmentPatientRequestResponseDto> requests = service.getRequestsForDoctor(doctorId);
+        long userId = JwtUtils.extractUserIdFromToken(token);
+        List<AppointmentRequestDto> requests = service.getRequestsForDoctor(userId);
 
-        return ResponseEntity.ok(ApiResponse.<List<AppointmentPatientRequestResponseDto>>builder()
+        return ResponseEntity.ok(ApiResponse.<List<AppointmentRequestDto>>builder()
                 .status(true)
                 .message("Fetched appointment requests for doctor")
                 .data(requests)
@@ -51,12 +49,12 @@ public class AppointmentRequestController {
     }
 
     @GetMapping("/patient")
-    public ResponseEntity<ApiResponse<List<AppointmentDoctorReceiveResponseDto>>> getRequestsForPatient(
+    public ResponseEntity<ApiResponse<List<AppointmentRequestDto>>> getRequestsForPatient(
             @CookieValue(name = "jwt", required = true) String token) {
 
-        List<AppointmentDoctorReceiveResponseDto> requests = service.getRequestsForPatient(token);
+        List<AppointmentRequestDto> requests = service.getRequestsForPatient(token);
 
-        return ResponseEntity.ok(ApiResponse.<List<AppointmentDoctorReceiveResponseDto>>builder()
+        return ResponseEntity.ok(ApiResponse.<List<AppointmentRequestDto>>builder()
                 .status(true)
                 .message("Fetched your appointment requests")
                 .data(requests)
@@ -64,14 +62,14 @@ public class AppointmentRequestController {
     }
 
     @PatchMapping("/update-status/{requestId}")
-    public ResponseEntity<ApiResponse<AppointmentDoctorReceiveResponseDto>> updateStatus(
+    public ResponseEntity<ApiResponse<AppointmentRequestDto>> updateStatus(
             @PathVariable Long requestId,
             @RequestParam String status,
             @CookieValue(name = "jwt", required = true) String token) {
 
-        AppointmentDoctorReceiveResponseDto updatedRequest = service.updateStatus(requestId, status, token);
+        AppointmentRequestDto updatedRequest = service.updateStatus(requestId, status, token);
 
-        return ResponseEntity.ok(ApiResponse.<AppointmentDoctorReceiveResponseDto>builder()
+        return ResponseEntity.ok(ApiResponse.<AppointmentRequestDto>builder()
                 .status(true)
                 .message("Appointment status updated successfully")
                 .data(updatedRequest)

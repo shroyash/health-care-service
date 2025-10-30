@@ -17,5 +17,4 @@ public class DoctorDashboardStatsDto {
     private long totalPatients;
     private long totalPatientsThisWeek;
     private long reportsThisMonth;
-    private List<DoctorAppointmentDto> appointments;
 }

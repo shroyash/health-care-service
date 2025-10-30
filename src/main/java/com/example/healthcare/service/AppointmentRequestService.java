@@ -10,9 +10,9 @@ public interface AppointmentRequestService {
 
     void createRequest(AppointmentRequestDto dto, String token);
 
-    List<AppointmentPatientRequestResponseDto> getRequestsForDoctor(Long doctorId);
+    List<AppointmentRequestDto> getRequestsForDoctor(Long doctorId);
 
-    List<AppointmentDoctorReceiveResponseDto> getRequestsForPatient(String token);
+    List<AppointmentRequestDto> getRequestsForPatient(String token);
 
-    AppointmentDoctorReceiveResponseDto updateStatus(Long requestId, String status, String token);
+    AppointmentRequestDto updateStatus(Long requestId, String status, String token);
 }

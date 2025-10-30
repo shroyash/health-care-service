@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/doctor-profiles")
 @AllArgsConstructor
-public class DocterProfileController {
+public class DoctorProfileController {
 
     private final DoctorProfileService doctorProfileService;
 

@@ -1,13 +1,12 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.AppointmentDoctorReceiveResponseDto;
-import com.example.healthcare.dto.AppointmentPatientRequestResponseDto;
 import com.example.healthcare.dto.AppointmentRequestDto;
-import com.example.healthcare.exceptions.BadRequestException;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
-import com.example.healthcare.model.AppointmentRequest;
-import com.example.healthcare.model.AppointmentStatus;
+import com.example.healthcare.model.*;
+import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.AppointmentRequestRepository;
+import com.example.healthcare.repository.DoctorProfileRepository;
+import com.example.healthcare.repository.PatientProfileRepository;
 import com.example.healthcare.service.AppointmentRequestService;
 import com.example.healthcare.service.NotificationService;
 import com.example.healthcare.utils.JwtUtils;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Slf4j
@@ -24,93 +24,155 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppointmentRequestServiceImpl implements AppointmentRequestService {
 
-    private final AppointmentRequestRepository repository;
+    private final AppointmentRequestRepository requestRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final PatientProfileRepository patientProfileRepository;
+    private final DoctorProfileRepository doctorProfileRepository;
     private final NotificationService notificationService;
 
     @Override
     @Transactional
     public void createRequest(AppointmentRequestDto dto, String token) {
-        long patientId = JwtUtils.extractUserIdFromToken(token);
-        String patientName = JwtUtils.extractUserNameFromToken(token);
+        Long userId = JwtUtils.extractUserIdFromToken(token);
+        PatientProfile patient = patientProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-        repository.findByPatientIdAndDoctorIdAndStatus(patientId, dto.getDoctorId(), AppointmentStatus.PENDING.toString())
-                .ifPresent(existing -> {
-                    throw new BadRequestException("You already have a pending appointment request with this doctor");
-                });
+        AppointmentRequest request = AppointmentRequest.builder()
+                .doctorId(dto.getDoctorId())
+                .doctorFullName(dto.getDoctorName())
+                .day(dto.getDay())
+                .startTime(dto.getStartTime())
+                .endTime(dto.getEndTime())
+                .patientFullName(patient.getFullName())
+                .status("PENDING")
+                .notes(dto.getNotes())
+                .createdAt(LocalDateTime.now())
+                .build();
 
-        AppointmentRequest request = new AppointmentRequest();
-        request.setPatientId(patientId);
-        request.setPatientFullName(patientName);
-        request.setDoctorId(dto.getDoctorId());
-        request.setDoctorFullName(dto.getDoctorName());
-        request.setStatus("PENDING");
-        request.setNotes(dto.getNotes());
-        request.setCreatedAt(LocalDateTime.now());
-        repository.save(request);
+        requestRepository.save(request);
 
-        try {
-            notificationService.sendNotification(
-                    dto.getDoctorId().toString(),
-                    "New Appointment Request",
-                    "Patient " + patientName + " requested an appointment",
-                    "APPOINTMENT_REQUEST"
-            );
-        } catch (Exception e) {
-            log.warn("Failed to send notification to doctor: {}", e.getMessage());
-        }
+        notificationService.sendNotification(
+                dto.getDoctorId().toString(),
+                "New Appointment Request",
+                "Patient " + patient.getFullName() + " requested an appointment.",
+                "APPOINTMENT_REQUEST"
+        );
     }
 
     @Override
-    public List<AppointmentPatientRequestResponseDto> getRequestsForDoctor(Long doctorId) {
-        return repository.findByDoctorId(doctorId)
+    public List<AppointmentRequestDto> getRequestsForDoctor(Long doctorUserId) {
+        DoctorProfile doctor = doctorProfileRepository.findByUserId(doctorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
+
+        Long doctorProfileId = doctor.getDoctorProfileId();
+
+        return requestRepository.findByDoctorId(doctorProfileId)
                 .stream()
-                .map(req -> AppointmentPatientRequestResponseDto.builder()
-                        .patientId(req.getPatientId())
-                        .patientFullName(req.getPatientFullName())
+                .map(request -> AppointmentRequestDto.builder()
+                        .requestId(request.getId())
+                        .doctorId(request.getDoctorId())
+                        .doctorName(request.getDoctorFullName())
+                        .patientName(request.getPatientFullName())
+                        .day(request.getDay())
+                        .startTime(request.getStartTime())
+                        .endTime(request.getEndTime())
+                        .notes(request.getNotes())
+                        .status(request.getStatus())
                         .build())
                 .toList();
     }
 
     @Override
-    public List<AppointmentDoctorReceiveResponseDto> getRequestsForPatient(String token) {
-        long patientId = JwtUtils.extractUserIdFromToken(token);
+    public List<AppointmentRequestDto> getRequestsForPatient(String token) {
+        Long userId = JwtUtils.extractUserIdFromToken(token);
+        PatientProfile patient = patientProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-        return repository.findByPatientId(patientId)
+        return requestRepository.findByPatientId(patient.getPatientProfileId())
                 .stream()
-                .map(req -> AppointmentDoctorReceiveResponseDto.builder()
-                        .doctorId(req.getDoctorId())
-                        .doctorFullName(req.getDoctorFullName())
-                        .status(req.getStatus())
+                .map(request -> AppointmentRequestDto.builder()
+                        .requestId(request.getId())
+                        .doctorId(request.getDoctorId())
+                        .doctorName(request.getDoctorFullName())
+                        .patientName(request.getPatientFullName())
+                        .day(request.getDay())
+                        .startTime(request.getStartTime())
+                        .endTime(request.getEndTime())
+                        .notes(request.getNotes())
+                        .status(request.getStatus())
                         .build())
                 .toList();
     }
 
     @Override
     @Transactional
-    public AppointmentDoctorReceiveResponseDto updateStatus(Long requestId, String status, String token) {
-        long doctorId = JwtUtils.extractUserIdFromToken(token);
+    public AppointmentRequestDto updateStatus(Long requestId, String status, String token) {
+        Long doctorUserId = JwtUtils.extractUserIdFromToken(token);
+        DoctorProfile doctor = doctorProfileRepository.findByUserId(doctorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-        AppointmentRequest request = repository.findById(requestId)
+        AppointmentRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
-        if (!request.getDoctorId().equals(doctorId)) {
+        if (!request.getDoctorId().equals(doctor.getDoctorProfileId())) {
             throw new RuntimeException("Unauthorized to update this request");
         }
 
         request.setStatus(status);
-        repository.save(request);
+        requestRepository.save(request);
 
-        // Notify patient
+        // If doctor confirms, create Appointment and mark schedule as booked
+        if ("CONFIRMED".equalsIgnoreCase(status)) {
+            PatientProfile patient = patientProfileRepository.findByUserId(request.getPatientId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
+
+            // Fetch doctor's schedule for the selected day/time
+            DoctorSchedule schedule = doctor.getSchedules().stream()
+                    .filter(s -> s.getDayOfWeek().equalsIgnoreCase(request.getDay())
+                            && s.getStartTime().equals(request.getStartTime())
+                            && s.isAvailable())
+                    .findFirst()
+                    .orElseThrow(() -> new ResourceNotFoundException("Selected schedule not available"));
+
+            // Mark schedule as booked
+            schedule.setAvailable(false);
+            schedule.setUpdatedAt(LocalDateTime.now());
+
+            // Create appointment
+            LocalDateTime appointmentDateTime = LocalDateTime.of(
+                    LocalDateTime.now().toLocalDate(), // optional: parse actual date if needed
+                    LocalTime.parse(request.getStartTime())
+            );
+
+            Appointment appointment = Appointment.builder()
+                    .doctor(doctor)
+                    .patient(patient)
+                    .schedule(schedule)
+                    .appointmentDate(appointmentDateTime)
+                    .status(AppointmentStatus.CONFIRMED)
+                    .checkupType("General")
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            appointmentRepository.save(appointment);
+        }
+
         notificationService.sendNotification(
-                request.getPatientId().toString(),
+                request.getPatientFullName(),
                 "Appointment " + status,
                 "Your appointment with Dr. " + request.getDoctorFullName() + " is " + status.toLowerCase(),
                 "APPOINTMENT_STATUS"
         );
 
-        return AppointmentDoctorReceiveResponseDto.builder()
+        return AppointmentRequestDto.builder()
+                .requestId(request.getId())
                 .doctorId(request.getDoctorId())
-                .doctorFullName(request.getDoctorFullName())
+                .doctorName(request.getDoctorFullName())
+                .patientName(request.getPatientFullName())
+                .day(request.getDay())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .notes(request.getNotes())
                 .status(request.getStatus())
                 .build();
     }

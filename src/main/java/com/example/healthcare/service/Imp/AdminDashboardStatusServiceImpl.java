@@ -51,7 +51,7 @@ public class AdminDashboardStatusServiceImpl implements AdminDashboardStatusServ
             LocalDate today = LocalDate.now();
             LocalDateTime startOfDay = today.atStartOfDay();
             LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-            return appointmentRepository.countByAppointmentTimeBetween(startOfDay, endOfDay);
+            return appointmentRepository.countByAppointmentDateBetween(startOfDay, endOfDay);
         } catch (Exception e) {
             log.error("Error fetching total appointments today: {}", e.getMessage(), e);
             return 0; // fallback value
