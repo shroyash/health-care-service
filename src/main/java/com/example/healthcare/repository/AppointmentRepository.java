@@ -27,13 +27,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Fetch confirmed appointments with schedule for a doctor
     @Query("SELECT new com.example.healthcare.dto.DoctorAppointmentDto(" +
-            "a.id, p.fullName, a.appointmentDate, a.meetingLink, s.slot) " +
+            "a.id, p.id, p.fullName, a.appointmentDate, s.startTime, s.endTime, a.checkupType, a.meetingLink) " +
             "FROM Appointment a " +
             "JOIN a.patient p " +
             "JOIN a.schedule s " +
-            "WHERE a.doctor.doctorProfileId = :doctorProfileId AND a.status = 'CONFIRMED' " +
+            "WHERE a.doctor.doctorProfileId = :doctorProfileId " +
+            "AND a.status = 'CONFIRMED' " +
+            "AND DATE(a.appointmentDate) = CURRENT_DATE " +
             "ORDER BY a.appointmentDate ASC")
-    List<DoctorAppointmentDto> findConfirmedAppointmentsWithScheduleByDoctor(@Param("doctorProfileId") Long doctorProfileId);
+    List<DoctorAppointmentDto> findTodaysConfirmedAppointmentsByDoctor(@Param("doctorProfileId") Long doctorProfileId);
 
     // Count appointments between time range
     long countByAppointmentDateBetween(LocalDateTime start, LocalDateTime end);
@@ -44,12 +46,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             "AND a.appointmentDate > CURRENT_TIMESTAMP")
     long countUpcomingAppointmentsByPatient(@Param("patientProfileId") Long patientProfileId);
 
-    // Fetch upcoming confirmed appointments for a patient
     @Query("SELECT new com.example.healthcare.dto.PatientAppointmentDto(" +
-            "a.id, d.fullName, a.appointmentDate, a.status, a.meetingLink) " +
+            "a.id, d.doctorProfileId, d.fullName, a.appointmentDate, s.startTime, s.endTime, a.checkupType, a.meetingLink, a.status) " +
             "FROM Appointment a " +
             "JOIN a.doctor d " +
-            "WHERE a.patient.patientProfileId = :patientProfileId AND a.status = 'CONFIRMED' " +
+            "JOIN a.schedule s " +
+            "WHERE a.patient.patientProfileId = :patientProfileId " +
+            "AND a.status = 'CONFIRMED' " +
             "AND a.appointmentDate > CURRENT_TIMESTAMP " +
             "ORDER BY a.appointmentDate ASC")
     List<PatientAppointmentDto> findUpcomingAppointmentsByPatient(@Param("patientProfileId") Long patientProfileId);

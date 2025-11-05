@@ -1,23 +1,19 @@
 package com.example.healthcare.controller;
 
 import com.example.healthcare.dto.*;
-import com.example.healthcare.feign.AuthServiceClient;
 import com.example.healthcare.service.AdminDashboardStatusService;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.service.PatientProfileService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/dashboard/admin")
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class AdminDashboardController {
 
     private final AdminDashboardStatusService adminDashboardStatusService;
@@ -64,5 +60,47 @@ public class AdminDashboardController {
         );
     }
 
+    // Suspend a patient
+    @PutMapping("/suspend/{patientId}")
+    public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable Long patientId) {
+        var updatedPatient = patientProfileService.suspendPatient(patientId);
+        ApiResponse<?> response = new ApiResponse<>(true, "Patient suspended successfully", updatedPatient);
+        return ResponseEntity.ok(response);
     }
+
+    // Restore a suspended patient
+    @PutMapping("/restore/{patientId}")
+    public ResponseEntity<ApiResponse<?>> restorePatient(@PathVariable Long patientId) {
+        var updatedPatient = patientProfileService.restorePatient(patientId);
+        ApiResponse<?> response = new ApiResponse<>(true, "Patient restored successfully", updatedPatient);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{doctorId}/suspend")
+    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> suspendDoctor(@PathVariable Long doctorId) {
+        DoctorProfileResponseDto doctor = doctorProfileService.suspendDoctor(doctorId);
+
+        ApiResponse<DoctorProfileResponseDto> response = new ApiResponse<>(
+                true,
+                "Doctor suspended successfully",
+                doctor
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{doctorId}/restore")
+    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> restoreDoctor(@PathVariable Long doctorId) {
+        DoctorProfileResponseDto doctor = doctorProfileService.restoreDoctor(doctorId);
+
+        ApiResponse<DoctorProfileResponseDto> response = new ApiResponse<>(
+                true,
+                "Doctor restored successfully",
+                doctor
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+}
 

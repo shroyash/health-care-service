@@ -21,16 +21,25 @@ public class PatientDashboardController {
         this.patientDashboardService = patientDashboardService;
     }
 
-    @GetMapping("/appointments/upcoming")
-    public ResponseEntity<ApiResponse<PatientDashboardStatsDto>> getUpcomingAppointments(@CookieValue("jwt") String token) {
+    @GetMapping("/appointments/stats")
+    public ResponseEntity<ApiResponse<PatientDashboardStatsDto>> getPatientStats(@CookieValue("jwt") String token) {
         long userId = JwtUtils.extractUserIdFromToken(token);
         long totalUpcoming = patientDashboardService.getTotalUpcomingAppointments(userId);
-        List<PatientAppointmentDto> appointments = patientDashboardService.getUpcomingAppointments(userId);
 
-        PatientDashboardStatsDto data = new PatientDashboardStatsDto(totalUpcoming, appointments);
+        PatientDashboardStatsDto data = new PatientDashboardStatsDto(totalUpcoming);
 
         return ResponseEntity.ok(
-                new ApiResponse<>(true, "Upcoming confirmed appointments fetched successfully", data)
+                new ApiResponse<>(true, "Patient stats confirmed fetched successfully", data)
+        );
+    }
+
+    @GetMapping("/appointments/upcoming")
+    public ResponseEntity<ApiResponse<List<PatientAppointmentDto>>> getUpcomingAppointments(@CookieValue("jwt") String token) {
+        long userId = JwtUtils.extractUserIdFromToken(token);
+        List<PatientAppointmentDto> appointments = patientDashboardService.getUpcomingAppointments(userId);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Upcoming confirmed appointments fetched successfully", appointments)
         );
     }
 
@@ -44,4 +53,5 @@ public class PatientDashboardController {
 
 
     }
+
 }

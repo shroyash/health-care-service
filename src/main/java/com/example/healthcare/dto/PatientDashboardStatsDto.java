@@ -10,5 +10,4 @@ import java.util.List;
 @NoArgsConstructor
 public class PatientDashboardStatsDto {
     private long totalUpcomingAppointments;
-    private List<PatientAppointmentDto> upcomingAppointments;
 }

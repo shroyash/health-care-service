@@ -37,13 +37,12 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
 
         Long doctorProfileId = doctorProfile.getDoctorProfileId();
 
-        // 1. Calculate today's range
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
 
         // 2. Fetch stats
         long totalAppointmentsToday = appointmentRepository
-                .countByDoctorIdAndAppointmentDateBetween(doctorProfileId, startOfDay, endOfDay);
+                .countByDoctorDoctorProfileIdAndAppointmentDateBetween(doctorProfileId, startOfDay, endOfDay);
 
         long totalPatients = appointmentRepository
                 .countDistinctPatientsByDoctor(doctorProfileId);
@@ -66,6 +65,6 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
 
         Long doctorProfileId = doctorProfile.getDoctorProfileId();
         return appointmentRepository
-                .findConfirmedAppointmentsWithScheduleByDoctor(doctorProfileId);
+                .findTodaysConfirmedAppointmentsByDoctor(doctorProfileId);
     }
 }

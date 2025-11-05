@@ -26,7 +26,7 @@ public class DoctorDashboardController {
         );
     }
 
-    @GetMapping("/appointments")
+    @GetMapping("/today-appointments")
     public ResponseEntity<ApiResponse<?>> getTodayAppointments(
             @CookieValue("jwt") String token
     ) {
