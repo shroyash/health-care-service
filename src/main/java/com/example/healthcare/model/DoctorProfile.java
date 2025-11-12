@@ -3,6 +3,7 @@ package com.example.healthcare.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,17 +32,19 @@ public class DoctorProfile {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = true)  // Allow null if not required
+    @Column(nullable = true)
     private String specialization;
 
-    @Column(nullable = true)  // Allow null if not required
+    @Column(nullable = true)
     private int yearsOfExperience;
 
-    @Column(nullable = true)  // Allow null if not required
+    @Column(nullable = true)
     private String workingAT;
 
-    @Column(nullable = true)  // Allow null if not required
+    @Column(nullable = true)
     private String contactNumber;
+
+    private String profileImage;
 
     @OneToMany(
             mappedBy = "doctorProfile",

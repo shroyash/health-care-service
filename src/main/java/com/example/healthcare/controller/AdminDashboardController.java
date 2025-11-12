@@ -60,6 +60,13 @@ public class AdminDashboardController {
         );
     }
 
+    @GetMapping("/patients-stats")
+    public ResponseEntity<ApiResponse<PatientsStats>> getPatientsStats() {
+        PatientsStats patientsStats = adminDashboardStatusService.getPatientStats();
+        ApiResponse<PatientsStats> response = new ApiResponse<>(true, "Patients stats fetched successfully", patientsStats);
+        return ResponseEntity.ok(response);
+    }
+
     // Suspend a patient
     @PutMapping("/suspend/{patientId}")
     public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable Long patientId) {

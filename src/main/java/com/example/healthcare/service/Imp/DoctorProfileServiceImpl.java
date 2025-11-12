@@ -104,6 +104,15 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
         return mapToDto(profile);
     }
 
+    @Override
+    public void updateProfileImage(long doctorId, String fileUrl) {
+        DoctorProfile doctorProfile = doctorProfileRepository
+                .findByDoctorProfileId(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
+
+        doctorProfile.setProfileImage(fileUrl);
+        doctorProfileRepository.save(doctorProfile);
+    }
 
 
     // ----------------- Helper -----------------
@@ -118,4 +127,5 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                 .contactNumber(doctor.getContactNumber())
                 .build();
     }
+
 }

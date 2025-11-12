@@ -87,6 +87,17 @@ public class PatientProfileCreateImp implements PatientProfileService {
         return mapToDto(profile); // convert entity to DTO
     }
 
+    @Override
+    public void updateProfileImage(Long patientProfileId, String fileUrl) {
+        PatientProfile patientProfile = patientProfileRepository
+                .findByPatientProfileId(patientProfileId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
+
+        patientProfile.setProfileImage(fileUrl);
+        patientProfileRepository.save(patientProfile);
+    }
+
+
     // Helper method to map entity to DTO
     private PatientProfileDTO mapToDto(PatientProfile profile) {
         return PatientProfileDTO.builder()

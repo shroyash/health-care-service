@@ -2,6 +2,7 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorWithScheduleDto;
 import com.example.healthcare.dto.PatientAppointmentDto;
+import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.PatientProfile;
 import com.example.healthcare.repository.AppointmentRepository;
@@ -74,5 +75,8 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
         ).collect(Collectors.toList());
     }
 
-    
+
+
+
+
 }

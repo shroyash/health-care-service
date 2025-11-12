@@ -1,15 +1,13 @@
 package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.AppointmentFullDto;
-import com.example.healthcare.dto.DoctorProfileResponseDto;
-import com.example.healthcare.dto.PatientProfileDTO;
+import com.example.healthcare.dto.PatientsStats;
 import com.example.healthcare.feign.AuthServiceClient;
+import com.example.healthcare.model.AppointmentStatus;
 import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.repository.PatientProfileRepository;
 import com.example.healthcare.service.AdminDashboardStatusService;
-import com.example.healthcare.service.DoctorProfileService;
-import com.example.healthcare.service.PatientProfileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -27,22 +25,18 @@ public class AdminDashboardStatusServiceImpl implements AdminDashboardStatusServ
     private final PatientProfileRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
     private final AuthServiceClient authServiceClient;
-    private final DoctorProfileService doctorProfileService;
-    private final PatientProfileService patientProfileService;
+
 
     public AdminDashboardStatusServiceImpl(
             DoctorProfileRepository doctorRepository,
             PatientProfileRepository patientRepository,
             AppointmentRepository appointmentRepository,
-            AuthServiceClient authServiceClient,
-            DoctorProfileService doctorProfileService, PatientProfileService patientProfileService
+            AuthServiceClient authServiceClient
     ) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.appointmentRepository = appointmentRepository;
         this.authServiceClient = authServiceClient;
-        this.doctorProfileService = doctorProfileService;
-        this.patientProfileService = patientProfileService;
     }
 
     @Override
@@ -76,6 +70,14 @@ public class AdminDashboardStatusServiceImpl implements AdminDashboardStatusServ
             log.error("Error fetching total patients: {}", e.getMessage(), e);
             return 0;
         }
+    }
+
+    @Override
+    public PatientsStats getPatientStats() {
+        long activePatients = patientRepository.countByStatus("ACTIVE");
+        long totalPatients = patientRepository.count();
+        long totalCompletedAppointments = appointmentRepository.countByStatus(AppointmentStatus.COMPLETED);
+        return new PatientsStats(activePatients,totalPatients,totalCompletedAppointments);
     }
 
     @Override

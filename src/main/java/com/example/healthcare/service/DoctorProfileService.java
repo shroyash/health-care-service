@@ -20,4 +20,6 @@ public interface DoctorProfileService {
     DoctorProfileResponseDto suspendDoctor(Long doctorId);
 
     DoctorProfileResponseDto restoreDoctor(Long doctorId);
+
+    void updateProfileImage(long doctorId, String fileUrl);
 }

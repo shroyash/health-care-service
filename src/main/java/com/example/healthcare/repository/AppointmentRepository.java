@@ -4,6 +4,7 @@ import com.example.healthcare.dto.AppointmentFullDto;
 import com.example.healthcare.dto.DoctorAppointmentDto;
 import com.example.healthcare.dto.PatientAppointmentDto;
 import com.example.healthcare.model.Appointment;
+import com.example.healthcare.model.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,20 +26,25 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT COUNT(DISTINCT a.patient.patientProfileId) FROM Appointment a WHERE a.doctor.doctorProfileId = :doctorProfileId")
     long countDistinctPatientsByDoctor(@Param("doctorProfileId") Long doctorProfileId);
 
-    // Fetch confirmed appointments with schedule for a doctor
-    @Query("SELECT new com.example.healthcare.dto.DoctorAppointmentDto(" +
-            "a.id, p.id, p.fullName, a.appointmentDate, s.startTime, s.endTime, a.checkupType, a.meetingLink) " +
-            "FROM Appointment a " +
-            "JOIN a.patient p " +
-            "JOIN a.schedule s " +
-            "WHERE a.doctor.doctorProfileId = :doctorProfileId " +
-            "AND a.status = 'CONFIRMED' " +
-            "AND DATE(a.appointmentDate) = CURRENT_DATE " +
-            "ORDER BY a.appointmentDate ASC")
+    @Query("""
+SELECT new com.example.healthcare.dto.DoctorAppointmentDto(
+    a.id, p.id, p.fullName, a.appointmentDate, s.startTime, s.endTime,
+    a.checkupType, a.meetingLink)
+FROM Appointment a
+JOIN a.patient p
+JOIN a.schedule s
+WHERE a.doctor.doctorProfileId = :doctorProfileId
+AND a.status = 'CONFIRMED'
+AND FUNCTION('DATE', a.appointmentDate) = CURRENT_DATE
+ORDER BY a.appointmentDate ASC
+""")
     List<DoctorAppointmentDto> findTodaysConfirmedAppointmentsByDoctor(@Param("doctorProfileId") Long doctorProfileId);
+
 
     // Count appointments between time range
     long countByAppointmentDateBetween(LocalDateTime start, LocalDateTime end);
+
+    long countByStatus(AppointmentStatus status);
 
     // Count upcoming confirmed appointments for a patient
     @Query("SELECT COUNT(a) FROM Appointment a " +
@@ -76,3 +82,4 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             "ORDER BY a.appointmentDate DESC")
     List<AppointmentFullDto> findAllAppointmentsWithDoctorAndPatient();
 }
+

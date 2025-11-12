@@ -14,5 +14,6 @@ public interface PatientProfileService {
     List<PatientProfileDTO> getAllPatients();
     PatientProfileDTO suspendPatient(Long patientId);
     PatientProfileDTO restorePatient(Long patientId);
+    void updateProfileImage(Long patientProfileId, String fileUrl);
 
 }
