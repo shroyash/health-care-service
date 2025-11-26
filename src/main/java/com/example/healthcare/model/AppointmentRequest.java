@@ -29,9 +29,12 @@ public class AppointmentRequest {
 
     private String endTime;
 
-    private String status;      // PENDING, CONFIRMED, REJECTED
-    private String notes;       // patient message
+    @Enumerated(EnumType.STRING)
+    private AppointmentRequestStatus status;
+
+    private String notes;
 
     @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime requestedAt = LocalDateTime.now();
+
 }

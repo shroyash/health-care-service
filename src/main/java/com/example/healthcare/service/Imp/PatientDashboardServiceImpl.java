@@ -41,7 +41,7 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
         // find patient profile by userId
         PatientProfile patientProfile = patientProfileRepository
                 .findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Patient profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
         Long patientProfileId = patientProfile.getPatientProfileId();
 

@@ -4,6 +4,7 @@ import com.example.healthcare.dto.ApiResponse;
 import com.example.healthcare.dto.DoctorWithScheduleDto;
 import com.example.healthcare.dto.PatientAppointmentDto;
 import com.example.healthcare.dto.PatientDashboardStatsDto;
+import com.example.healthcare.service.AdminDashboardStatusService;
 import com.example.healthcare.service.PatientDashboardService;
 import com.example.healthcare.utils.JwtUtils;
 import org.springframework.http.ResponseEntity;
@@ -13,20 +14,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/dashboard/patient")
-public class PatientDashboardController {
+public class    PatientDashboardController {
 
     private final PatientDashboardService patientDashboardService;
+    private final AdminDashboardStatusService adminDashboardStatusService;
 
-    public PatientDashboardController(PatientDashboardService patientDashboardService) {
+    public PatientDashboardController(PatientDashboardService patientDashboardService, AdminDashboardStatusService adminDashboardStatusService) {
         this.patientDashboardService = patientDashboardService;
+        this.adminDashboardStatusService = adminDashboardStatusService;
     }
 
     @GetMapping("/appointments/stats")
     public ResponseEntity<ApiResponse<PatientDashboardStatsDto>> getPatientStats(@CookieValue("jwt") String token) {
         long userId = JwtUtils.extractUserIdFromToken(token);
         long totalUpcoming = patientDashboardService.getTotalUpcomingAppointments(userId);
+        long totalActiveDoctor = adminDashboardStatusService.getTotalDoctors();
 
-        PatientDashboardStatsDto data = new PatientDashboardStatsDto(totalUpcoming);
+        PatientDashboardStatsDto data = new PatientDashboardStatsDto(totalUpcoming,totalActiveDoctor);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Patient stats confirmed fetched successfully", data)

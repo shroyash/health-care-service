@@ -1,5 +1,6 @@
 package com.example.healthcare.dto;
 
+import com.example.healthcare.model.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +21,5 @@ public class PatientAppointmentDto {
     private String endTime;
     private String checkupType;
     private String meetingLink;
-    private String status;       // CONFIRMED, PENDING, etc.
+    private AppointmentStatus status;       // CONFIRMED, PENDING, etc.
 }

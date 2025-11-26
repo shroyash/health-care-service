@@ -4,7 +4,6 @@ import com.example.healthcare.dto.*;
 import com.example.healthcare.service.AdminDashboardStatusService;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.service.PatientProfileService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

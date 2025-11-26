@@ -9,7 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class DoctorScheduleDto {
-    private Long doctorProfileId;
     private List<ScheduleDto> schedules;
 
     @Data

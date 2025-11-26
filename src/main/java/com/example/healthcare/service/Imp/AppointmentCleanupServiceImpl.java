@@ -16,15 +16,11 @@ public class AppointmentCleanupServiceImpl implements AppointmentCleanupService 
 
     private final AppointmentRequestRepository repository;
 
-    /**
-     * Scheduled to run every hour.
-     * Deletes all appointment requests older than 24 hours (both pending and confirmed).
-     */
     @Override
     @Scheduled(fixedRate = 60 * 60 * 1000) // every hour
     public void deleteOldRequests() {
         LocalDateTime cutoff = LocalDateTime.now().minusHours(24);
-        int deletedCount = repository.deleteByCreatedAtBefore(cutoff);
+        int deletedCount = repository.deleteByRequestedAtBefore(cutoff);
 
         if (deletedCount > 0) {
             log.info("Deleted {} appointment requests older than 24 hours.", deletedCount);

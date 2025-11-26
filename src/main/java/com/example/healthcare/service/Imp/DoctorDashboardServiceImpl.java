@@ -3,6 +3,8 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorAppointmentDto;
 import com.example.healthcare.dto.DoctorDashboardStatsDto;
+import com.example.healthcare.model.AppointmentRequestStatus;
+import com.example.healthcare.model.AppointmentStatus;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.AppointmentRequestRepository;
@@ -47,14 +49,14 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
         long totalPatients = appointmentRepository
                 .countDistinctPatientsByDoctor(doctorProfileId);
 
-        long pendingRequests = requestRepository
-                .countByDoctorIdAndStatus(doctorProfileId, "PENDING");
+//        long pendingRequests = requestRepository
+//                .countByDoctorIdAndStatus(doctorProfileId, AppointmentRequestStatus.PENDING);
 
         // 4. Build DTO
         return DoctorDashboardStatsDto.builder()
                 .totalAppointmentsToday(totalAppointmentsToday)
                 .totalPatients(totalPatients)
-                .pendingRequests(pendingRequests)
+                .pendingRequests(0)
                 .build();
     }
 

@@ -13,7 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class DoctorScheduleResponseDto {
-    private Long doctorProfileId;
     private String doctorName;
     private String email;
     private String specialization;

@@ -1,12 +1,23 @@
 # Base image with Maven + JDK
-FROM maven:3.9.4-eclipse-temurin-21
+FROM maven:3.9.6-eclipse-temurin-21
+
+# Set working directory
 WORKDIR /app
 
-# Copy source code
+# Copy pom.xml first to cache dependencies
+COPY pom.xml .
+
+# Pre-download dependencies
+RUN mvn dependency:go-offline -B
+
+# Copy full source code
 COPY . .
 
-# Expose dev port
-EXPOSE 8004
+# Build the project
+RUN mvn clean package -DskipTests
 
-# Run Spring Boot in dev mode (hot reload)
-CMD ["mvn", "spring-boot:run"]
+# Expose Spring Boot + Debug ports
+EXPOSE 8004 5005
+
+# Run jar with remote debugging enabled
+ENTRYPOINT ["java","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005","-jar","target/app.jar"]

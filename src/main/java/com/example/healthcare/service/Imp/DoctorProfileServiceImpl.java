@@ -22,17 +22,18 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     public void createDoctorProfile(String token) {
         Long userId = JwtUtils.extractUserIdFromToken(token);
         String email = JwtUtils.extractEmailFromToken(token);
+        String userName = JwtUtils.extractUserNameFromToken(token);
 
         boolean exists = doctorProfileRepository.findByUserId(userId).isPresent();
         if (!exists) {
             DoctorProfile profile = DoctorProfile.builder()
                     .userId(userId)
-                    .fullName("Unknown")
+                    .fullName("userName")
                     .email(email != null ? email : "unknown@example.com")
                     .specialization(null)
                     .yearsOfExperience(0)
                     .contactNumber(null)
-                    .status("active") // default status
+                    .status("active")
                     .build();
 
             doctorProfileRepository.save(profile);

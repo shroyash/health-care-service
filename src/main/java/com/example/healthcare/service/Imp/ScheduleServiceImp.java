@@ -27,13 +27,13 @@ public class ScheduleServiceImp implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     @Transactional
-    public void saveWeeklySchedule(DoctorScheduleDto dto) {
+    public void saveWeeklySchedule(DoctorScheduleDto dto, long userId) {
         try {
-            log.info("Starting to save weekly schedule for doctor: {}", dto.getDoctorProfileId());
 
-            // Step 1: Find doctor
-            DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileId(dto.getDoctorProfileId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + dto.getDoctorProfileId()));
+
+            DoctorProfile doctor = doctorProfileRepository.findByUserId(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + userId));
+
 
             log.info("Found doctor: {}", doctor.getFullName());
 
@@ -45,7 +45,7 @@ public class ScheduleServiceImp implements ScheduleService {
             log.info("Creating {} new schedules", dto.getSchedules().size());
 
             // Step 3: Delete old schedules for this doctor
-            scheduleRepository.deleteByDoctorProfileDoctorProfileId(dto.getDoctorProfileId());
+            scheduleRepository.deleteByDoctorProfileDoctorProfileId(userId);
             log.info("Deleted old schedules for doctor");
 
             // Step 4: Convert DTO to entities and save directly
@@ -69,11 +69,7 @@ public class ScheduleServiceImp implements ScheduleService {
                 }
             }).toList();
 
-            // Step 5: Save schedules directly (no doctor merge)
-            log.info("Saving {} schedules", scheduleList.size());
             scheduleRepository.saveAll(scheduleList);
-
-            log.info("Successfully saved weekly schedule for doctor: {}", dto.getDoctorProfileId());
 
         } catch (ResourceNotFoundException e) {
             log.error("Doctor not found: {}", e.getMessage());
@@ -92,11 +88,9 @@ public class ScheduleServiceImp implements ScheduleService {
 
     @Transactional(readOnly = true)
     public DoctorScheduleResponseDto getDoctorScheduleWithDetails(Long doctorProfileId) {
-        try {
             DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileId(doctorProfileId)
                     .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorProfileId));
 
-            // Convert schedules to DTO
             List<DoctorScheduleResponseDto.ScheduleInfo> scheduleInfoList = doctor.getSchedules().stream()
                     .map(schedule -> DoctorScheduleResponseDto.ScheduleInfo.builder()
                             .scheduleId(schedule.getId())
@@ -112,7 +106,6 @@ public class ScheduleServiceImp implements ScheduleService {
 
             // Build response DTO
             DoctorScheduleResponseDto response = DoctorScheduleResponseDto.builder()
-                    .doctorProfileId(doctor.getDoctorProfileId())
                     .doctorName(doctor.getFullName())
                     .email(doctor.getEmail())
                     .specialization(doctor.getSpecialization())
@@ -120,13 +113,5 @@ public class ScheduleServiceImp implements ScheduleService {
                     .schedules(scheduleInfoList)
                     .build();
             return response;
-
-        } catch (ResourceNotFoundException e) {
-            log.error("Doctor not found: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("Error fetching schedules for doctor {}: {}", doctorProfileId, e.getMessage(), e);
-            throw new RuntimeException("Error fetching schedules: " + e.getMessage(), e);
-        }
     }
 }
