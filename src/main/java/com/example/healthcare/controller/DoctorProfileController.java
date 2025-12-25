@@ -7,6 +7,7 @@ import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.service.FileStorageService;
 import com.example.healthcare.utils.JwtUtils;
+import jakarta.ws.rs.CookieParam;
 import lombok.AllArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -24,11 +25,31 @@ public class DoctorProfileController {
     private final DoctorProfileService doctorProfileService;
     private final FileStorageService fileStorageService;
 
+
     @PostMapping
     public String createDoctorProfile(@RequestHeader("Authorization") String token) {
         doctorProfileService.createDoctorProfile(token);
         return "Doctor profile created successfully!";
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> getDoctorProfile(
+            @CookieValue("jwt") String token) {
+
+        Long userId = JwtUtils.extractUserIdFromToken(token);
+
+        DoctorProfileResponseDto doctorProfile =
+                doctorProfileService.getDoctorProfile(userId);
+
+        ApiResponse<DoctorProfileResponseDto> response = ApiResponse.<DoctorProfileResponseDto>builder()
+                .status(true)
+                .message("Doctor profile fetched successfully")
+                .data(doctorProfile)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
 
     @PutMapping
     public ResponseEntity<ApiResponse<Void>> updateDoctorProfile(

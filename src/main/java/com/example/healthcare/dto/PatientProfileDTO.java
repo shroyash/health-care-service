@@ -11,4 +11,5 @@ public class PatientProfileDTO {
     private String email;
     private String contactNumber;
     private String status;
+    private String profileImgUrl;
 }

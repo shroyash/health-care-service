@@ -1,11 +1,9 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.ApiResponse;
-import com.example.healthcare.dto.DoctorProfileResponseDto;
-import com.example.healthcare.dto.DoctorScheduleDto;
-import com.example.healthcare.dto.DoctorScheduleResponseDto;
+import com.example.healthcare.dto.*;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
+import com.example.healthcare.model.DoctorSchedule;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.service.ScheduleService;
 import com.example.healthcare.utils.JwtUtils;
@@ -78,6 +76,33 @@ public class ScheduleController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{scheduleId}")
+    public ResponseEntity<ApiResponse<String>> deleteSchedule(@PathVariable long scheduleId) {
+        scheduleService.deleteSchedule(scheduleId);
+
+        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+                .status(true)
+                .message("Schedule deleted successfully")
+                .data(null)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PutMapping("/{scheduleId}")
+    public ResponseEntity<ApiResponse<DoctorSchedule>> updateSchedule(
+            @PathVariable Long scheduleId,
+            @RequestBody @Valid DoctorScheduleUpdateDTO dto) {
+
+        DoctorSchedule updatedSchedule = scheduleService.updateSchedule(scheduleId, dto);
+
+        return ResponseEntity.ok(ApiResponse.<DoctorSchedule>builder()
+                .status(true)
+                .message("Schedule updated successfully")
+                .data(updatedSchedule)
+                .build());
     }
 
 

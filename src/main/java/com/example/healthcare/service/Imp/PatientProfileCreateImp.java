@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +41,15 @@ public class PatientProfileCreateImp implements PatientProfileService {
 
             patientProfileRepository.save(profile);
         }
+    }
+
+    @Override
+    public PatientProfileDTO getPatientProfile(long userId) {
+        PatientProfile patientProfile = patientProfileRepository
+                .findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+
+        return mapToDto(patientProfile);
     }
 
     @Override
@@ -106,6 +116,7 @@ public class PatientProfileCreateImp implements PatientProfileService {
                 .email(profile.getEmail())
                 .contactNumber(profile.getContactNumber())
                 .status(profile.getStatus())
+                .profileImgUrl(profile.getProfileImage())
                 .build();
     }
 

@@ -10,6 +10,7 @@ import java.util.List;
 @Service
 public interface PatientProfileService {
     void createPatientProfile(String token);
+    PatientProfileDTO getPatientProfile(long userId);
     void updatePatientProfile(Long doctorId, PatientProfileUpdateDto dto);
     List<PatientProfileDTO> getAllPatients();
     PatientProfileDTO suspendPatient(Long patientId);

@@ -28,7 +28,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
         if (!exists) {
             DoctorProfile profile = DoctorProfile.builder()
                     .userId(userId)
-                    .fullName("userName")
+                    .fullName(userName)
                     .email(email != null ? email : "unknown@example.com")
                     .specialization(null)
                     .yearsOfExperience(0)
@@ -38,6 +38,14 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
 
             doctorProfileRepository.save(profile);
         }
+    }
+
+    @Override
+    public DoctorProfileResponseDto getDoctorProfile(long userID) {
+        DoctorProfile doctorProfile = doctorProfileRepository.findByUserId(userID).
+                orElseThrow(() -> new ResourceNotFoundException("doctor profile not found"));
+
+        return mapToDto(doctorProfile);
     }
 
     @Override
@@ -126,6 +134,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                 .yearsOfExperience(doctor.getYearsOfExperience())
                 .workingAT(doctor.getWorkingAT())
                 .contactNumber(doctor.getContactNumber())
+                .profileImgUrl(doctor.getProfileImage())
                 .build();
     }
 

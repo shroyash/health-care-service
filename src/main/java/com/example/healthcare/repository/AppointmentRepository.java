@@ -28,17 +28,27 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("""
 SELECT new com.example.healthcare.dto.DoctorAppointmentDto(
-    a.id, p.id, p.fullName, a.appointmentDate, s.startTime, s.endTime,
-    a.checkupType, a.meetingLink)
+    a.id,
+    p.id,
+    p.fullName,
+    a.appointmentDate,
+    s.startTime,
+    s.endTime,
+    a.checkupType,
+    a.meetingLink,
+    a.status
+)
 FROM Appointment a
 JOIN a.patient p
-JOIN a.schedule s
+LEFT JOIN a.schedule s
 WHERE a.doctor.doctorProfileId = :doctorProfileId
-AND a.status = 'CONFIRMED'
-AND FUNCTION('DATE', a.appointmentDate) = CURRENT_DATE
+AND a.status = 'SCHEDULED'
 ORDER BY a.appointmentDate ASC
 """)
-    List<DoctorAppointmentDto> findTodaysConfirmedAppointmentsByDoctor(@Param("doctorProfileId") Long doctorProfileId);
+    List<DoctorAppointmentDto> findUpcomingAppointmentsByDoctor(
+            @Param("doctorProfileId") Long doctorProfileId
+    );
+
 
 
     // Count appointments between time range
@@ -58,7 +68,7 @@ ORDER BY a.appointmentDate ASC
             "JOIN a.doctor d " +
             "JOIN a.schedule s " +
             "WHERE a.patient.patientProfileId = :patientProfileId " +
-            "AND a.status = 'CONFIRMED' " +
+            "AND a.status = 'SCHEDULED' " +
             "AND a.appointmentDate > CURRENT_TIMESTAMP " +
             "ORDER BY a.appointmentDate ASC")
     List<PatientAppointmentDto> findUpcomingAppointmentsByPatient(@Param("patientProfileId") Long patientProfileId);
@@ -73,13 +83,22 @@ ORDER BY a.appointmentDate ASC
             "ORDER BY a.appointmentDate DESC")
     List<PatientAppointmentDto> findCompletedOrCancelledAppointmentsByPatient(@Param("patientProfileId") Long patientProfileId);
 
-    // Fetch all appointments with doctor and patient
-    @Query("SELECT new com.example.healthcare.dto.AppointmentFullDto(" +
-            "a.id, d.fullName, p.fullName, a.appointmentDate, a.status, a.meetingLink) " +
-            "FROM Appointment a " +
-            "JOIN a.doctor d " +
-            "JOIN a.patient p " +
-            "ORDER BY a.appointmentDate DESC")
+    @Query("""
+SELECT new com.example.healthcare.dto.AppointmentFullDto(
+    a.id,
+    d.fullName,
+    p.fullName,
+    a.appointmentDate,
+    a.status,
+    a.checkupType,
+    a.meetingLink
+)
+FROM Appointment a
+LEFT JOIN a.doctor d
+LEFT JOIN a.patient p
+ORDER BY a.appointmentDate DESC
+""")
     List<AppointmentFullDto> findAllAppointmentsWithDoctorAndPatient();
+
 }
 

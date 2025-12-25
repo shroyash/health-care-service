@@ -8,6 +8,8 @@ import java.util.List;
 public interface DoctorProfileService {
     void createDoctorProfile(String token);
 
+    DoctorProfileResponseDto getDoctorProfile(long userID);
+
     void updateDoctorProfile(Long doctorId, DoctorProfileUpdateDto dto);
 
     List<DoctorProfileResponseDto> getAllDoctorProfiles();

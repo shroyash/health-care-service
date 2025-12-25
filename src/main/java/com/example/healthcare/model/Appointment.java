@@ -33,6 +33,8 @@ public class Appointment {
     private LocalDateTime appointmentDate;
     private String meetingLink;
 
+    private String meetingToken;
+
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
 

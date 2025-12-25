@@ -2,6 +2,7 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorScheduleDto;
 import com.example.healthcare.dto.DoctorScheduleResponseDto;
+import com.example.healthcare.dto.DoctorScheduleUpdateDTO;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.DoctorSchedule;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -113,5 +115,23 @@ public class ScheduleServiceImp implements ScheduleService {
                     .schedules(scheduleInfoList)
                     .build();
             return response;
+    }
+
+    @Override
+    public void deleteSchedule(long scheduleId) {
+        scheduleRepository.deleteById(scheduleId);
+    }
+
+    @Override
+    public DoctorSchedule updateSchedule(Long id, DoctorScheduleUpdateDTO dto) {
+        DoctorSchedule existingSchedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Schedule not found with id: " + id));
+
+        existingSchedule.setDayOfWeek(dto.getDayOfWeek());
+        existingSchedule.setStartTime(dto.getStartTime());
+        existingSchedule.setEndTime(dto.getEndTime());
+        existingSchedule.setUpdatedAt(LocalDateTime.now());
+
+        return scheduleRepository.save(existingSchedule);
     }
 }

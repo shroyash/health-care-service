@@ -26,8 +26,8 @@ public class DoctorDashboardController {
         );
     }
 
-    @GetMapping("/today-appointments")
-    public ResponseEntity<ApiResponse<?>> getTodayAppointments(
+    @GetMapping("/upcomming-appointments")
+    public ResponseEntity<ApiResponse<?>> getUpcommingAppointments(
             @CookieValue("jwt") String token
     ) {
         Long userId = JwtUtils.extractUserIdFromToken(token);

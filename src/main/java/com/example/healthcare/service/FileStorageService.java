@@ -30,7 +30,7 @@ public class FileStorageService {
             // Copy file to target location
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             log.info("File saved: {}", filePath.toAbsolutePath());
-            return "/uploads/profile/" + filename;
+            return "/uploads/profile/profile/" + filename;
 
         } catch (IOException e) {
             log.error("Failed to save file: {}", e.getMessage(), e);

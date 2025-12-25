@@ -1,7 +1,9 @@
 package com.example.healthcare.controller;
 
 import com.example.healthcare.dto.ApiResponse;
+import com.example.healthcare.dto.PatientProfileDTO;
 import com.example.healthcare.dto.PatientProfileUpdateDto;
+import com.example.healthcare.model.PatientProfile;
 import com.example.healthcare.service.FileStorageService;
 import com.example.healthcare.service.PatientProfileService;
 import com.example.healthcare.utils.JwtUtils;
@@ -19,12 +21,32 @@ public class PatientProfileController {
     private final PatientProfileService patientProfileService;
     private final FileStorageService fileStorageService;
 
+
     // Create patient profile
     @PostMapping
     public String createPatientProfile(@RequestHeader("Authorization") String token) {
         patientProfileService.createPatientProfile(token);
         return "Patient profile created successfully!";
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<PatientProfileDTO>> getPatientProfile(
+            @CookieValue("jwt") String token
+    ) {
+        long userId = JwtUtils.extractUserIdFromToken(token);
+
+        PatientProfileDTO patientProfileDTO =
+                patientProfileService.getPatientProfile(userId);
+
+        ApiResponse<PatientProfileDTO> response = ApiResponse.<PatientProfileDTO>builder()
+                .status(true)
+                .message("Patient profile fetch successful")
+                .data(patientProfileDTO)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
 
     // Update patient profile info
     @PutMapping

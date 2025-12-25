@@ -9,6 +9,7 @@ import com.example.healthcare.repository.AppointmentRequestRepository;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.repository.PatientProfileRepository;
 import com.example.healthcare.service.AppointmentRequestService;
+import com.example.healthcare.service.EmailService;
 import com.example.healthcare.service.NotificationService;
 import com.example.healthcare.utils.JwtUtils;
 
@@ -17,9 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
+
+import static java.util.UUID.randomUUID;
 
 @Slf4j
 @Service
@@ -31,7 +36,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
     private final PatientProfileRepository patientProfileRepository;
     private final DoctorProfileRepository doctorProfileRepository;
     private final NotificationService notificationService;
-
+    private final EmailService emailService;
 
     // CREATE REQUEST
     @Override
@@ -54,7 +59,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                 .endTime(dto.getEndTime())
                 .status(AppointmentRequestStatus.PENDING)
                 .notes(dto.getNotes())
-                .requestedAt(LocalDateTime.now())   // FIXED
+                .requestedAt(LocalDateTime.now())
                 .build();
 
         requestRepository.save(request);
@@ -68,8 +73,6 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         );
     }
 
-
-
     // GET REQUESTS FOR DOCTOR
     @Override
     public List<AppointmentRequestDto> getRequestsForDoctor(Long doctorUserId) {
@@ -82,8 +85,6 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                 .map(this::toDto)
                 .toList();
     }
-
-
 
     // GET REQUESTS FOR PATIENT
     @Override
@@ -100,9 +101,6 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                 .toList();
     }
 
-
-
-    // UPDATE STATUS
     @Override
     @Transactional
     public AppointmentRequestDto updateStatus(Long requestId, String status, String token) {
@@ -115,72 +113,117 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         AppointmentRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
+        // Check ownership
         if (!request.getDoctorId().equals(doctor.getDoctorProfileId())) {
             throw new UnauthorizedException("Unauthorized to update this request");
         }
 
-        AppointmentRequestStatus newStatus = AppointmentRequestStatus.valueOf(status.toUpperCase());
+        AppointmentRequestStatus newStatus =
+                AppointmentRequestStatus.valueOf(status.toUpperCase());
+
         request.setStatus(newStatus);
+        requestRepository.save(request);
 
-        requestRepository.save(request); // SAVE STATUS
+        AppointmentRequestDto dto = toDto(request);
 
-
-
-        // If approved → create actual appointment
+        // ✅ Only create appointment when APPROVED
         if (newStatus == AppointmentRequestStatus.APPROVED) {
 
             PatientProfile patient = patientProfileRepository.findById(request.getPatientId())
                     .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
+            // Find available schedule
             DoctorSchedule schedule = doctor.getSchedules().stream()
                     .filter(s -> s.getDayOfWeek().equalsIgnoreCase(request.getDay())
                             && s.getStartTime().equals(request.getStartTime())
                             && s.isAvailable())
                     .findFirst()
-                    .orElseThrow(() -> new ResourceNotFoundException("Selected schedule not available"));
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Selected schedule not available"));
 
             schedule.setAvailable(false);
             schedule.setUpdatedAt(LocalDateTime.now());
+            doctorProfileRepository.save(doctor);
 
-            doctorProfileRepository.save(doctor); // IMPORTANT — FIXES schedule update
-
-
-
+            // Appointment date
             LocalDateTime appointmentDate = LocalDateTime.of(
-                    LocalDateTime.now().toLocalDate(),
+                    LocalDate.now(),
                     LocalTime.parse(request.getStartTime())
             );
 
+            // Generate meeting token
+            String meetingToken = UUID.randomUUID().toString();
+
+            // Create appointment WITHOUT meeting link first
             Appointment appointment = Appointment.builder()
                     .doctor(doctor)
                     .patient(patient)
                     .schedule(schedule)
                     .appointmentDate(appointmentDate)
+                    .meetingToken(meetingToken)
                     .status(AppointmentStatus.SCHEDULED)
                     .checkupType("General")
                     .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .build();
 
+            // Save to generate appointment ID
             appointmentRepository.save(appointment);
+
+            // Build meeting link using APPOINTMENT ID
+            String meetingLink =
+                    "http://localhost:3000/meet/" + appointment.getId()
+                            + "?token=" + meetingToken;
+
+            // Update appointment with meeting link
+            appointment.setMeetingLink(meetingLink);
+            appointment.setUpdatedAt(LocalDateTime.now());
+            appointmentRepository.save(appointment);
+
+            // Add appointment info to DTO
+            dto.setAppointmentId(appointment.getId());
+            dto.setMeetingLink(meetingLink);
+            dto.setMeetingToken(meetingToken);
+
+            // Email notification
+            String subject = "Appointment Scheduled";
+            String body = "Your appointment with Dr. " + doctor.getFullName()
+                    + " is scheduled for " + appointmentDate
+                    + ".\n\nJoin the meeting using this link:\n" + meetingLink;
+
+            emailService.sendEmail(patient.getEmail(), subject, body);
+            emailService.sendEmail(doctor.getEmail(), subject, body);
+
+            // App notifications
+            notificationService.sendNotification(
+                    patient.getUserId().toString(),
+                    "Appointment Confirmed",
+                    "Join meeting: " + meetingLink,
+                    "APPOINTMENT_MEETING"
+            );
+
+            notificationService.sendNotification(
+                    doctor.getUserId().toString(),
+                    "Appointment Confirmed",
+                    "Join meeting: " + meetingLink,
+                    "APPOINTMENT_MEETING"
+            );
         }
 
-
-
-        // Notify patient
+        // Notify patient about status change
         notificationService.sendNotification(
-                doctor.getUserId().toString(),  // FIXED USER ID
+                request.getPatientId().toString(),
                 "Appointment " + newStatus.name(),
-                "Your appointment with Dr. " + request.getDoctorFullName()
-                        + " is " + newStatus.name().toLowerCase(),
+                "Your appointment status is now: " + newStatus.name().toLowerCase(),
                 "APPOINTMENT_STATUS"
         );
 
-        return toDto(request);
+        return dto;
     }
 
 
 
-    // DTO MAPPER
+    // DTO Mapper
     private AppointmentRequestDto toDto(AppointmentRequest r) {
         return AppointmentRequestDto.builder()
                 .requestId(r.getId())

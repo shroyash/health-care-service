@@ -19,4 +19,7 @@ public class AppointmentRequestDto {
     private String status;
     private String notes;
     Long requestId;
+    private Long appointmentId;
+    private String meetingLink;
+    private String meetingToken;
 }

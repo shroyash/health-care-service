@@ -67,6 +67,6 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
 
         Long doctorProfileId = doctorProfile.getDoctorProfileId();
         return appointmentRepository
-                .findTodaysConfirmedAppointmentsByDoctor(doctorProfileId);
+                .findUpcomingAppointmentsByDoctor(doctorProfileId);
     }
 }
