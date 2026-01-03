@@ -3,8 +3,6 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorAppointmentDto;
 import com.example.healthcare.dto.DoctorDashboardStatsDto;
-import com.example.healthcare.model.AppointmentRequestStatus;
-import com.example.healthcare.model.AppointmentStatus;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.AppointmentRequestRepository;
@@ -16,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DoctorDashboardServiceImpl implements DoctorDashboardService {
@@ -32,19 +31,17 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
     }
 
     @Override
-    public DoctorDashboardStatsDto getDoctorDashboard(Long userId) {
+    public DoctorDashboardStatsDto getDoctorDashboard(UUID doctorProfileId) {
 
-        DoctorProfile doctorProfile = doctorProfileRepository.findByUserId(userId)
+        DoctorProfile doctorProfile = doctorProfileRepository.findById(doctorProfileId)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found for user"));
-
-        Long doctorProfileId = doctorProfile.getDoctorProfileId();
 
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
 
         // 2. Fetch stats
         long totalAppointmentsToday = appointmentRepository
-                .countByDoctorDoctorProfileIdAndAppointmentDateBetween(doctorProfileId, startOfDay, endOfDay);
+                .countByDoctorIdAndAppointmentDateBetween(doctorProfileId, startOfDay, endOfDay);
 
         long totalPatients = appointmentRepository
                 .countDistinctPatientsByDoctor(doctorProfileId);
@@ -61,12 +58,11 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
     }
 
     @Override
-    public List<DoctorAppointmentDto> getAppointments(Long userID){
-        DoctorProfile doctorProfile = doctorProfileRepository.findByUserId(userID)
+    public List<DoctorAppointmentDto> getAppointments(UUID userID){
+        DoctorProfile doctorProfile = doctorProfileRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found for user"));
 
-        Long doctorProfileId = doctorProfile.getDoctorProfileId();
         return appointmentRepository
-                .findUpcomingAppointmentsByDoctor(doctorProfileId);
+                .findUpcomingAppointmentsByDoctor(userID);
     }
 }

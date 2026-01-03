@@ -14,6 +14,7 @@ import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 public class JwtUtils {
 
@@ -64,13 +65,22 @@ public class JwtUtils {
         }
     }
 
-    public static Long extractUserIdFromToken(String token) {
+    public static UUID extractUserIdFromToken(String token) {
         logger.debug("[JwtUtils] Extracting userId from token");
+
         Object idObj = parseToken(token).get("id");
-        if (idObj instanceof Number) return ((Number) idObj).longValue();
-        else if (idObj instanceof String) return Long.parseLong((String) idObj);
-        else throw new RuntimeException("JWT 'id' claim is missing or invalid");
+
+        if (idObj == null) {
+            throw new RuntimeException("JWT 'id' claim is missing");
+        }
+
+        try {
+            return UUID.fromString(idObj.toString());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("JWT 'id' claim is not a valid UUID", e);
+        }
     }
+
 
     public static String extractEmailFromToken(String token) {
         return parseToken(token).get("email", String.class);

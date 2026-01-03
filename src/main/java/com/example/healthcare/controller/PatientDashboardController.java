@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/dashboard/patient")
@@ -26,7 +27,7 @@ public class    PatientDashboardController {
 
     @GetMapping("/appointments/stats")
     public ResponseEntity<ApiResponse<PatientDashboardStatsDto>> getPatientStats(@CookieValue("jwt") String token) {
-        long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
         long totalUpcoming = patientDashboardService.getTotalUpcomingAppointments(userId);
         long totalActiveDoctor = adminDashboardStatusService.getTotalDoctors();
 
@@ -39,7 +40,7 @@ public class    PatientDashboardController {
 
     @GetMapping("/appointments/upcoming")
     public ResponseEntity<ApiResponse<List<PatientAppointmentDto>>> getUpcomingAppointments(@CookieValue("jwt") String token) {
-        long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
         List<PatientAppointmentDto> appointments = patientDashboardService.getUpcomingAppointments(userId);
 
         return ResponseEntity.ok(

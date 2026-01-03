@@ -2,6 +2,8 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.PatientProfileDTO;
 import com.example.healthcare.dto.PatientProfileUpdateDto;
+import com.example.healthcare.dto.UserRegisteredEvent;
+import com.example.healthcare.enums.Status;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.PatientProfile;
 import com.example.healthcare.repository.PatientProfileRepository;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,20 +25,18 @@ public class PatientProfileCreateImp implements PatientProfileService {
 
     private final PatientProfileRepository patientProfileRepository;
 
-    @Override
-    public void createPatientProfile(String token) {
-        Long userId = JwtUtils.extractUserIdFromToken(token);
-        String userName = JwtUtils.extractUserNameFromToken(token);
-        String email = JwtUtils.extractEmailFromToken(token);
 
-        boolean exists = patientProfileRepository.findByUserId(userId).isPresent();
+    public void createPatientProfile(UserRegisteredEvent event) {
+
+        UUID userId = UUID.fromString(event.getUserId());
+        boolean exists = patientProfileRepository.findById(userId).isPresent();
         if (!exists) {
             PatientProfile profile = PatientProfile.builder()
-                    .userId(userId)
-                    .fullName(userName)
-                    .email(email)
+                    .id(userId)
+                    .fullName(event.getUsername())
+                    .email(event.getEmail())
                     .contactNumber(null)
-                    .status("active")
+                    .status(Status.ACTIVE)
                     .build();
             log.info("Created patient profile: {}", profile);
 
@@ -44,17 +45,17 @@ public class PatientProfileCreateImp implements PatientProfileService {
     }
 
     @Override
-    public PatientProfileDTO getPatientProfile(long userId) {
+    public PatientProfileDTO getPatientProfile(UUID userId) {
         PatientProfile patientProfile = patientProfileRepository
-                .findByUserId(userId)
+                .findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
 
         return mapToDto(patientProfile);
     }
 
     @Override
-    public void updatePatientProfile(Long userId, PatientProfileUpdateDto dto) {
-        PatientProfile profile = patientProfileRepository.findByUserId(userId)
+    public void updatePatientProfile(UUID userId, PatientProfileUpdateDto dto) {
+        PatientProfile profile = patientProfileRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
         profile.setFullName(dto.getFullname());
@@ -68,7 +69,7 @@ public class PatientProfileCreateImp implements PatientProfileService {
         List<PatientProfile> patients = patientProfileRepository.findAll();
         return patients.stream()
                 .map(patient -> PatientProfileDTO.builder()
-                        .patientId(patient.getPatientProfileId())
+                        .patientId(patient.getId())
                         .fullName(patient.getFullName())
                         .email(patient.getEmail())
                         .contactNumber(patient.getContactNumber())
@@ -79,28 +80,28 @@ public class PatientProfileCreateImp implements PatientProfileService {
 
 
     // Service layer
-    public PatientProfileDTO suspendPatient(Long patientId) {
+    public PatientProfileDTO suspendPatient(UUID patientId) {
         PatientProfile profile = patientProfileRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
-        profile.setStatus("suspended"); // mark as suspended
+        profile.setStatus(Status.INACTIVE); // mark as suspended
         patientProfileRepository.save(profile);
         log.info("Suspended patient account: {}", patientId);
         return mapToDto(profile); // convert entity to DTO
     }
 
-    public PatientProfileDTO restorePatient(Long patientId) {
+    public PatientProfileDTO restorePatient(UUID patientId) {
         PatientProfile profile = patientProfileRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
-        profile.setStatus("active");
+        profile.setStatus(Status.ACTIVE);
         patientProfileRepository.save(profile);
         log.info("Restored patient account: {}", patientId);
         return mapToDto(profile); // convert entity to DTO
     }
 
     @Override
-    public void updateProfileImage(Long patientProfileId, String fileUrl) {
+    public void updateProfileImage(UUID userId, String fileUrl) {
         PatientProfile patientProfile = patientProfileRepository
-                .findByPatientProfileId(patientProfileId)
+                .findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
         patientProfile.setProfileImage(fileUrl);
@@ -111,11 +112,11 @@ public class PatientProfileCreateImp implements PatientProfileService {
     // Helper method to map entity to DTO
     private PatientProfileDTO mapToDto(PatientProfile profile) {
         return PatientProfileDTO.builder()
-                .patientId(profile.getPatientProfileId())
+                .patientId(profile.getId())
                 .fullName(profile.getFullName())
                 .email(profile.getEmail())
                 .contactNumber(profile.getContactNumber())
-                .status(profile.getStatus())
+                .status(profile.getStatus().name())
                 .profileImgUrl(profile.getProfileImage())
                 .build();
     }

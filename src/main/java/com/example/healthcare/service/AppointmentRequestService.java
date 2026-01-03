@@ -5,12 +5,13 @@ import com.example.healthcare.dto.AppointmentPatientRequestResponseDto;
 import com.example.healthcare.dto.AppointmentRequestDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface AppointmentRequestService {
 
     void createRequest(AppointmentRequestDto dto, String token);
 
-    List<AppointmentRequestDto> getRequestsForDoctor(Long doctorId);
+    List<AppointmentRequestDto> getRequestsForDoctor(UUID doctorId);
 
     List<AppointmentRequestDto> getRequestsForPatient(String token);
 

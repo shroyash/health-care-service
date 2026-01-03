@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,11 +30,11 @@ public class ScheduleServiceImp implements ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     @Transactional
-    public void saveWeeklySchedule(DoctorScheduleDto dto, long userId) {
+    public void saveWeeklySchedule(DoctorScheduleDto dto, UUID userId) {
         try {
 
 
-            DoctorProfile doctor = doctorProfileRepository.findByUserId(userId)
+            DoctorProfile doctor = doctorProfileRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + userId));
 
 
@@ -47,7 +48,7 @@ public class ScheduleServiceImp implements ScheduleService {
             log.info("Creating {} new schedules", dto.getSchedules().size());
 
             // Step 3: Delete old schedules for this doctor
-            scheduleRepository.deleteByDoctorProfileDoctorProfileId(userId);
+            scheduleRepository.deleteByDoctorProfileId(userId);
             log.info("Deleted old schedules for doctor");
 
             // Step 4: Convert DTO to entities and save directly
@@ -89,8 +90,8 @@ public class ScheduleServiceImp implements ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public DoctorScheduleResponseDto getDoctorScheduleWithDetails(Long doctorProfileId) {
-            DoctorProfile doctor = doctorProfileRepository.findByDoctorProfileId(doctorProfileId)
+    public DoctorScheduleResponseDto getDoctorScheduleWithDetails(UUID doctorProfileId) {
+            DoctorProfile doctor = doctorProfileRepository.findById(doctorProfileId)
                     .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorProfileId));
 
             List<DoctorScheduleResponseDto.ScheduleInfo> scheduleInfoList = doctor.getSchedules().stream()

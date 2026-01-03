@@ -9,12 +9,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 @NonNullApi
-public interface DoctorProfileRepository extends JpaRepository<DoctorProfile,Long > {
-    Optional<DoctorProfile> findByUserId(Long doctorId);
-    Optional<DoctorProfile> findByDoctorProfileId(Long docterProfileId);
+public interface DoctorProfileRepository extends JpaRepository<DoctorProfile, UUID> {
+    Optional<DoctorProfile> findById(UUID docterProfileId);
     List<DoctorProfile> findBySpecialization(String specialization);
     List<DoctorProfile> findByYearsOfExperienceBetween(int start, int end);
     List<DoctorProfile> findByYearsOfExperienceGreaterThanEqual(int years);

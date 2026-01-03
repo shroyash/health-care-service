@@ -6,12 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface ScheduleRepository extends JpaRepository<DoctorSchedule,Long> {
+public interface ScheduleRepository extends JpaRepository<DoctorSchedule, Long> {
 
     @EntityGraph("DoctorProfile.withSchedules")
-    List<DoctorSchedule> findByDoctorProfileDoctorProfileId(Long doctorProfileId);
+    List<DoctorSchedule> findByDoctorProfileId(UUID doctorProfileId);
 
-    void deleteByDoctorProfileDoctorProfileId(Long doctorProfileId);
+    void deleteByDoctorProfileId(UUID doctorProfileId);
 }

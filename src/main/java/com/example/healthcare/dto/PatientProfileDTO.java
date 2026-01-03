@@ -3,10 +3,12 @@ package com.example.healthcare.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 @Builder
 public class PatientProfileDTO {
-    private Long patientId;
+    private UUID patientId;
     private String fullName;
     private String email;
     private String contactNumber;

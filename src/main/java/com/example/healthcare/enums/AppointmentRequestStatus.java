@@ -1,4 +1,4 @@
-package com.example.healthcare.model;
+package com.example.healthcare.enums;
 
 public enum AppointmentRequestStatus {
     PENDING,

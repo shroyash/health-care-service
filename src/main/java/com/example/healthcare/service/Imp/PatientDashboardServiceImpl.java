@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,29 +25,27 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
     private final DoctorProfileRepository doctorProfileRepository;
 
     @Override
-    public long getTotalUpcomingAppointments(Long userId) {
+    public long getTotalUpcomingAppointments(UUID userId) {
         // find patient profile by userId
         PatientProfile patientProfile = patientProfileRepository
-                .findByUserId(userId)
+                .findById(userId)
                 .orElseThrow(() -> new RuntimeException("Patient profile not found"));
 
-        Long patientProfileId = patientProfile.getPatientProfileId();
+
 
         // count appointments for that patient
-        return appointmentRepository.countUpcomingAppointmentsByPatient(patientProfileId);
+        return appointmentRepository.countUpcomingAppointmentsByPatient(userId);
     }
 
     @Override
-    public List<PatientAppointmentDto> getUpcomingAppointments(Long userId) {
+    public List<PatientAppointmentDto> getUpcomingAppointments(UUID userId) {
         // find patient profile by userId
         PatientProfile patientProfile = patientProfileRepository
-                .findByUserId(userId)
+                .findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-        Long patientProfileId = patientProfile.getPatientProfileId();
-
         // fetch upcoming appointments for that patient
-        return appointmentRepository.findUpcomingAppointmentsByPatient(patientProfileId);
+        return appointmentRepository.findUpcomingAppointmentsByPatient(userId);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
 
         // Map to DTO
         return doctors.stream().map(doctor -> DoctorWithScheduleDto.builder()
-                .doctorProfileId(doctor.getDoctorProfileId())
+                .doctorProfileId(doctor.getId())
                 .name(doctor.getFullName())
                 .specialty(doctor.getSpecialization())
                 .email(doctor.getEmail())

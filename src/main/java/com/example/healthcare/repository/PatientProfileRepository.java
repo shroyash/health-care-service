@@ -6,11 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface PatientProfileRepository extends JpaRepository<PatientProfile, Long> {
-    Optional<PatientProfile> findByUserId(Long userID);
+public interface PatientProfileRepository extends JpaRepository<PatientProfile, UUID> {
+    Optional<PatientProfile> findById(UUID userId);
     long countByStatus(String status);
-    Optional<PatientProfile> findByPatientProfileId(Long patientProfileId);
-
 }

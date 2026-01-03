@@ -1,6 +1,6 @@
 package com.example.healthcare.dto;
 
-import com.example.healthcare.model.AppointmentStatus;
+import com.example.healthcare.enums.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

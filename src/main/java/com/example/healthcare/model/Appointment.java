@@ -1,5 +1,6 @@
 package com.example.healthcare.model;
 
+import com.example.healthcare.enums.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

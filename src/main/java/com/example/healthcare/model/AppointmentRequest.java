@@ -1,9 +1,11 @@
 package com.example.healthcare.model;
 
+import com.example.healthcare.enums.AppointmentRequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -17,10 +19,12 @@ public class AppointmentRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long patientId;
+    private UUID patientId;
+
     private String patientFullName; // Who requested
 
-    private Long doctorId;
+    private UUID doctorId;
+
     private String doctorFullName;
 
     private String day;

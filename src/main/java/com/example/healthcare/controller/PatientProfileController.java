@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/patient-profiles")
 @AllArgsConstructor
@@ -22,18 +24,12 @@ public class PatientProfileController {
     private final FileStorageService fileStorageService;
 
 
-    // Create patient profile
-    @PostMapping
-    public String createPatientProfile(@RequestHeader("Authorization") String token) {
-        patientProfileService.createPatientProfile(token);
-        return "Patient profile created successfully!";
-    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<PatientProfileDTO>> getPatientProfile(
             @CookieValue("jwt") String token
     ) {
-        long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
 
         PatientProfileDTO patientProfileDTO =
                 patientProfileService.getPatientProfile(userId);
@@ -54,7 +50,7 @@ public class PatientProfileController {
             @RequestBody PatientProfileUpdateDto dto,
             @CookieValue(name = "jwt", required = true) String token) {
 
-        Long patientId = JwtUtils.extractUserIdFromToken(token);
+        UUID patientId = JwtUtils.extractUserIdFromToken(token);
         patientProfileService.updatePatientProfile(patientId, dto);
         ApiResponse<Void> response = new ApiResponse<>(true, "Patient profile updated successfully!", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -63,7 +59,7 @@ public class PatientProfileController {
     // Upload patient profile image
     @PostMapping("/{patientId}/upload-img")
     public ResponseEntity<ApiResponse<String>> uploadProfileImg(
-            @PathVariable Long patientId,
+            @PathVariable UUID patientId,
             @RequestParam("file") MultipartFile file) {
 
             String fileUrl = fileStorageService.saveFile(file);

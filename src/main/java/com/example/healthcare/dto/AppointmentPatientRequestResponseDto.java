@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppointmentPatientRequestResponseDto {
-    private Long patientId;
+    private UUID patientId;
     private String patientFullName;
     private String status;
 }

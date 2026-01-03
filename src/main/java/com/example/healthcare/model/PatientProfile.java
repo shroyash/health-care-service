@@ -1,14 +1,15 @@
 package com.example.healthcare.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.healthcare.enums.AppointmentRequestStatus;
+import com.example.healthcare.enums.Status;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
@@ -16,15 +17,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class PatientProfile {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long patientProfileId;
 
-    private Long userId;
+    @Id
+    @Column(nullable = false, updatable = false)
+    private UUID id;
+
     private String fullName;
     private String email;
     private String contactNumber;
     private int age;
     private String profileImage;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }

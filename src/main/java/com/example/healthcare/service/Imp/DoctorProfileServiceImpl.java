@@ -2,6 +2,8 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorProfileResponseDto;
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
+import com.example.healthcare.dto.UserRegisteredEvent;
+import com.example.healthcare.enums.Status;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.repository.DoctorProfileRepository;
@@ -11,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -19,21 +22,20 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     private final DoctorProfileRepository doctorProfileRepository;
 
     @Override
-    public void createDoctorProfile(String token) {
-        Long userId = JwtUtils.extractUserIdFromToken(token);
-        String email = JwtUtils.extractEmailFromToken(token);
-        String userName = JwtUtils.extractUserNameFromToken(token);
+    public void createDoctorProfile(UserRegisteredEvent event) {
 
-        boolean exists = doctorProfileRepository.findByUserId(userId).isPresent();
+        UUID userId = UUID.fromString(event.getUserId());
+
+        boolean exists = doctorProfileRepository.findById(userId).isPresent();
+
         if (!exists) {
             DoctorProfile profile = DoctorProfile.builder()
-                    .userId(userId)
-                    .fullName(userName)
-                    .email(email != null ? email : "unknown@example.com")
+                    .fullName(event.getUsername())
+                    .email(event.getEmail())
                     .specialization(null)
                     .yearsOfExperience(0)
                     .contactNumber(null)
-                    .status("active")
+                    .status(Status.ACTIVE)
                     .build();
 
             doctorProfileRepository.save(profile);
@@ -41,16 +43,16 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     }
 
     @Override
-    public DoctorProfileResponseDto getDoctorProfile(long userID) {
-        DoctorProfile doctorProfile = doctorProfileRepository.findByUserId(userID).
+    public DoctorProfileResponseDto getDoctorProfile(UUID userID) {
+        DoctorProfile doctorProfile = doctorProfileRepository.findById(userID).
                 orElseThrow(() -> new ResourceNotFoundException("doctor profile not found"));
 
         return mapToDto(doctorProfile);
     }
 
     @Override
-    public void updateDoctorProfile(Long userId, DoctorProfileUpdateDto dto) {
-        DoctorProfile profile = doctorProfileRepository.findByUserId(userId)
+    public void updateDoctorProfile(UUID userId, DoctorProfileUpdateDto dto) {
+        DoctorProfile profile = doctorProfileRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
         profile.setFullName(dto.getFullName());
@@ -96,27 +98,27 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     }
 
     @Override
-    public DoctorProfileResponseDto suspendDoctor(Long doctorId) {
+    public DoctorProfileResponseDto suspendDoctor(UUID doctorId) {
         DoctorProfile profile = doctorProfileRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
-        profile.setStatus("suspended");
+        profile.setStatus(Status.INACTIVE);
         doctorProfileRepository.save(profile);
         return mapToDto(profile);
     }
 
     @Override
-    public DoctorProfileResponseDto restoreDoctor(Long doctorId) {
+    public DoctorProfileResponseDto restoreDoctor(UUID doctorId) {
         DoctorProfile profile = doctorProfileRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
-        profile.setStatus("active");
+        profile.setStatus(Status.ACTIVE);
         doctorProfileRepository.save(profile);
         return mapToDto(profile);
     }
 
     @Override
-    public void updateProfileImage(long doctorId, String fileUrl) {
+    public void updateProfileImage(UUID doctorId, String fileUrl) {
         DoctorProfile doctorProfile = doctorProfileRepository
-                .findByDoctorProfileId(doctorId)
+                .findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
         doctorProfile.setProfileImage(fileUrl);
@@ -127,7 +129,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     // ----------------- Helper -----------------
     private DoctorProfileResponseDto mapToDto(DoctorProfile doctor) {
         return DoctorProfileResponseDto.builder()
-                .doctorProfileId(doctor.getDoctorProfileId())
+                .doctorProfileId(doctor.getId())
                 .fullName(doctor.getFullName())
                 .email(doctor.getEmail())
                 .specialization(doctor.getSpecialization())
@@ -135,7 +137,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                 .workingAT(doctor.getWorkingAT())
                 .contactNumber(doctor.getContactNumber())
                 .profileImgUrl(doctor.getProfileImage())
+                .status(doctor.getStatus().name())
                 .build();
     }
-
 }

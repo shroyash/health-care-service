@@ -2,15 +2,17 @@ package com.example.healthcare.service;
 
 import com.example.healthcare.dto.DoctorProfileResponseDto;
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
+import com.example.healthcare.dto.UserRegisteredEvent;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface DoctorProfileService {
-    void createDoctorProfile(String token);
+    void createDoctorProfile(UserRegisteredEvent event);
 
-    DoctorProfileResponseDto getDoctorProfile(long userID);
+    DoctorProfileResponseDto getDoctorProfile(UUID userID);
 
-    void updateDoctorProfile(Long doctorId, DoctorProfileUpdateDto dto);
+    void updateDoctorProfile(UUID doctorId, DoctorProfileUpdateDto dto);
 
     List<DoctorProfileResponseDto> getAllDoctorProfiles();
 
@@ -19,9 +21,9 @@ public interface DoctorProfileService {
     List<DoctorProfileResponseDto> getDoctorsByExperience(String level);
 
 
-    DoctorProfileResponseDto suspendDoctor(Long doctorId);
+    DoctorProfileResponseDto suspendDoctor(UUID doctorId);
 
-    DoctorProfileResponseDto restoreDoctor(Long doctorId);
+    DoctorProfileResponseDto restoreDoctor(UUID doctorId);
 
-    void updateProfileImage(long doctorId, String fileUrl);
+    void updateProfileImage(UUID doctorId, String fileUrl);
 }

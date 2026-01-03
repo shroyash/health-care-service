@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/dashboard/doctor")
 @RequiredArgsConstructor
@@ -19,7 +21,7 @@ public class DoctorDashboardController {
     public ResponseEntity<ApiResponse<DoctorDashboardStatsDto>> getDoctorDashboard(
             @CookieValue("jwt") String token
     ) {
-        Long doctorId = JwtUtils.extractUserIdFromToken(token);
+        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
         DoctorDashboardStatsDto dashboard = doctorDashboardService.getDoctorDashboard(doctorId);
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Doctor dashboard data fetched successfully", dashboard)
@@ -30,7 +32,7 @@ public class DoctorDashboardController {
     public ResponseEntity<ApiResponse<?>> getUpcommingAppointments(
             @CookieValue("jwt") String token
     ) {
-        Long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
         var appointments = doctorDashboardService.getAppointments(userId);
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Today's appointments fetched successfully", appointments)

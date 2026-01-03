@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/schedules")
@@ -29,7 +30,7 @@ public class ScheduleController {
             @Valid @RequestBody DoctorScheduleDto dto,
             @CookieValue(name = "jwt") String token) {
 
-        Long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
 
 
         scheduleService.saveWeeklySchedule(dto, userId);
@@ -42,15 +43,14 @@ public class ScheduleController {
     public ResponseEntity<ApiResponse<DoctorScheduleResponseDto>> getDoctorSchedule(
             @CookieValue(name = "jwt") String token) {
 
-        Long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
 
         DoctorProfile doctorProfile = doctorProfileRepository
-                .findByUserId(userId)
+                .findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-        long doctorProfileId = doctorProfile.getDoctorProfileId();
 
-        DoctorScheduleResponseDto schedules = scheduleService.getDoctorScheduleWithDetails(doctorProfileId);
+        DoctorScheduleResponseDto schedules = scheduleService.getDoctorScheduleWithDetails(userId);
 
         ApiResponse<DoctorScheduleResponseDto> response = ApiResponse.<DoctorScheduleResponseDto>builder()
                 .status(true)
@@ -65,7 +65,7 @@ public class ScheduleController {
 
     @GetMapping("/{doctorProfileId}")
     public ResponseEntity<ApiResponse<DoctorScheduleResponseDto>> getDoctorScheduleById(
-            @PathVariable Long doctorProfileId) {
+            @PathVariable UUID doctorProfileId) {
 
         DoctorScheduleResponseDto schedules = scheduleService.getDoctorScheduleWithDetails(doctorProfileId);
 

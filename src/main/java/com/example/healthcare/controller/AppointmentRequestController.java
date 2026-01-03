@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -45,7 +46,7 @@ public class AppointmentRequestController {
     public ResponseEntity<ApiResponse<List<AppointmentRequestDto>>> getRequestsForDoctor(
             @CookieValue(name = "jwt", required = true) String token) {
 
-        long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
         List<AppointmentRequestDto> requests = service.getRequestsForDoctor(userId);
 
         return ResponseEntity.ok(ApiResponse.<List<AppointmentRequestDto>>builder()

@@ -1,6 +1,8 @@
 package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.AppointmentRequestDto;
+import com.example.healthcare.enums.AppointmentRequestStatus;
+import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.exceptions.UnauthorizedException;
 import com.example.healthcare.model.*;
@@ -24,8 +26,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,13 +44,13 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
     public void createRequest(AppointmentRequestDto dto, String token) {
 
         String patientUserName = JwtUtils.extractUserNameFromToken(token);
-        Long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
 
-        PatientProfile patient = patientProfileRepository.findByUserId(userId)
+        PatientProfile patient = patientProfileRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
         AppointmentRequest request = AppointmentRequest.builder()
-                .patientId(patient.getPatientProfileId())
+                .patientId(patient.getId())
                 .patientFullName(patientUserName)
                 .doctorId(dto.getDoctorId())
                 .doctorFullName(dto.getDoctorName())
@@ -75,12 +75,12 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
 
     // GET REQUESTS FOR DOCTOR
     @Override
-    public List<AppointmentRequestDto> getRequestsForDoctor(Long doctorUserId) {
+    public List<AppointmentRequestDto> getRequestsForDoctor(UUID userId) {
 
-        DoctorProfile doctor = doctorProfileRepository.findByUserId(doctorUserId)
+        DoctorProfile doctor = doctorProfileRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-        return requestRepository.findByDoctorId(doctor.getDoctorProfileId())
+        return requestRepository.findByDoctorId(doctor.getId())
                 .stream()
                 .map(this::toDto)
                 .toList();
@@ -90,12 +90,12 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
     @Override
     public List<AppointmentRequestDto> getRequestsForPatient(String token) {
 
-        Long userId = JwtUtils.extractUserIdFromToken(token);
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
 
-        PatientProfile patient = patientProfileRepository.findByUserId(userId)
+        PatientProfile patient = patientProfileRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-        return requestRepository.findByPatientId(patient.getPatientProfileId())
+        return requestRepository.findByPatientId(patient.getId())
                 .stream()
                 .map(this::toDto)
                 .toList();
@@ -105,16 +105,16 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
     @Transactional
     public AppointmentRequestDto updateStatus(Long requestId, String status, String token) {
 
-        Long doctorUserId = JwtUtils.extractUserIdFromToken(token);
+        UUID doctorUserId = JwtUtils.extractUserIdFromToken(token);
 
-        DoctorProfile doctor = doctorProfileRepository.findByUserId(doctorUserId)
+        DoctorProfile doctor = doctorProfileRepository.findById(doctorUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
         AppointmentRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         // Check ownership
-        if (!request.getDoctorId().equals(doctor.getDoctorProfileId())) {
+        if (!request.getDoctorId().equals(doctor.getId())) {
             throw new UnauthorizedException("Unauthorized to update this request");
         }
 
@@ -196,14 +196,14 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
 
             // App notifications
             notificationService.sendNotification(
-                    patient.getUserId().toString(),
+                    patient.getId().toString(),
                     "Appointment Confirmed",
                     "Join meeting: " + meetingLink,
                     "APPOINTMENT_MEETING"
             );
 
             notificationService.sendNotification(
-                    doctor.getUserId().toString(),
+                    doctor.getId().toString(),
                     "Appointment Confirmed",
                     "Join meeting: " + meetingLink,
                     "APPOINTMENT_MEETING"

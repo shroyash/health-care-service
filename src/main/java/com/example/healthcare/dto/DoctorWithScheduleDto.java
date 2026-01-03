@@ -3,6 +3,7 @@ package com.example.healthcare.dto;
 import lombok.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -10,7 +11,7 @@ import java.util.List;
 @Builder
 public class DoctorWithScheduleDto {
 
-    private Long doctorProfileId;
+    private UUID doctorProfileId;
     private String name;
     private String specialty;
     private String email;

@@ -1,11 +1,13 @@
 package com.example.healthcare.model;
 
+import com.example.healthcare.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @NamedEntityGraph(
         name = "DoctorProfile.withSchedules",      // Name of this graph
@@ -21,10 +23,8 @@ import java.util.List;
 public class DoctorProfile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long doctorProfileId;
-
-    private Long userId;
+    @Column(nullable = false, updatable = false)
+    private UUID id;
 
     @Column(nullable = false)
     private String fullName;
@@ -57,5 +57,6 @@ public class DoctorProfile {
     @Builder.Default
     private List<DoctorSchedule> schedules = new ArrayList<>();
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }

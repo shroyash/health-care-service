@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/dashboard/admin")
@@ -68,7 +69,7 @@ public class AdminDashboardController {
 
     // Suspend a patient
     @PutMapping("/suspend/{patientId}")
-    public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable Long patientId) {
+    public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable UUID patientId) {
         var updatedPatient = patientProfileService.suspendPatient(patientId);
         ApiResponse<?> response = new ApiResponse<>(true, "Patient suspended successfully", updatedPatient);
         return ResponseEntity.ok(response);
@@ -76,14 +77,14 @@ public class AdminDashboardController {
 
     // Restore a suspended patient
     @PutMapping("/restore/{patientId}")
-    public ResponseEntity<ApiResponse<?>> restorePatient(@PathVariable Long patientId) {
+    public ResponseEntity<ApiResponse<?>> restorePatient(@PathVariable UUID patientId) {
         var updatedPatient = patientProfileService.restorePatient(patientId);
         ApiResponse<?> response = new ApiResponse<>(true, "Patient restored successfully", updatedPatient);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{doctorId}/suspend")
-    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> suspendDoctor(@PathVariable Long doctorId) {
+    @PutMapping("/{doctorId}/suspend")
+    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> suspendDoctor(@PathVariable UUID doctorId) {
         DoctorProfileResponseDto doctor = doctorProfileService.suspendDoctor(doctorId);
 
         ApiResponse<DoctorProfileResponseDto> response = new ApiResponse<>(
@@ -95,8 +96,8 @@ public class AdminDashboardController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{doctorId}/restore")
-    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> restoreDoctor(@PathVariable Long doctorId) {
+    @PutMapping("/{doctorId}/restore")
+    public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> restoreDoctor(@PathVariable UUID doctorId) {
         DoctorProfileResponseDto doctor = doctorProfileService.restoreDoctor(doctorId);
 
         ApiResponse<DoctorProfileResponseDto> response = new ApiResponse<>(

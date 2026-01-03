@@ -3,7 +3,7 @@ package com.example.healthcare.service.Imp;
 import com.example.healthcare.dto.AppointmentFullDto;
 import com.example.healthcare.dto.PatientsStats;
 import com.example.healthcare.feign.AuthServiceClient;
-import com.example.healthcare.model.AppointmentStatus;
+import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.repository.PatientProfileRepository;
