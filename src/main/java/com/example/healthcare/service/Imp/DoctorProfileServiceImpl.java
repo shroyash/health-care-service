@@ -2,6 +2,7 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorProfileResponseDto;
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
+import com.example.healthcare.dto.DoctorRegisteredEvent;
 import com.example.healthcare.dto.UserRegisteredEvent;
 import com.example.healthcare.enums.Status;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
@@ -21,8 +22,8 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
 
     private final DoctorProfileRepository doctorProfileRepository;
 
-    @Override
-    public void createDoctorProfile(UserRegisteredEvent event) {
+
+    public void createDoctorProfile(DoctorRegisteredEvent event) {
 
         UUID userId = UUID.fromString(event.getUserId());
 
@@ -30,6 +31,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
 
         if (!exists) {
             DoctorProfile profile = DoctorProfile.builder()
+                    .id(userId)
                     .fullName(event.getUsername())
                     .email(event.getEmail())
                     .specialization(null)
@@ -41,6 +43,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
             doctorProfileRepository.save(profile);
         }
     }
+
 
     @Override
     public DoctorProfileResponseDto getDoctorProfile(UUID userID) {

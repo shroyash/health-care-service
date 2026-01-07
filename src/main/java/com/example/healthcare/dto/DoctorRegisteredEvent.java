@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRegisteredEvent {
-
+public class DoctorRegisteredEvent {
     private String userId;
     private String email;
     private String username;
+    private String licenseUrl;
 }

@@ -2,13 +2,14 @@ package com.example.healthcare.service;
 
 import com.example.healthcare.dto.DoctorProfileResponseDto;
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
+import com.example.healthcare.dto.DoctorRegisteredEvent;
 import com.example.healthcare.dto.UserRegisteredEvent;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface DoctorProfileService {
-    void createDoctorProfile(UserRegisteredEvent event);
+    void createDoctorProfile(DoctorRegisteredEvent event);
 
     DoctorProfileResponseDto getDoctorProfile(UUID userID);
 
