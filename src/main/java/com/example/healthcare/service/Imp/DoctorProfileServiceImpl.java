@@ -2,14 +2,12 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.DoctorProfileResponseDto;
 import com.example.healthcare.dto.DoctorProfileUpdateDto;
-import com.example.healthcare.dto.DoctorRegisteredEvent;
-import com.example.healthcare.dto.UserRegisteredEvent;
+import com.example.healthcare.event.DoctorRegisteredEvent;
 import com.example.healthcare.enums.Status;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.service.DoctorProfileService;
-import com.example.healthcare.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

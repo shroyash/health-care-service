@@ -2,19 +2,17 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.PatientProfileDTO;
 import com.example.healthcare.dto.PatientProfileUpdateDto;
-import com.example.healthcare.dto.UserRegisteredEvent;
+import com.example.healthcare.event.UserRegisteredEvent;
 import com.example.healthcare.enums.Status;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.PatientProfile;
 import com.example.healthcare.repository.PatientProfileRepository;
 import com.example.healthcare.service.PatientProfileService;
-import com.example.healthcare.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 

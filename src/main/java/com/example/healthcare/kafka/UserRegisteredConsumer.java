@@ -1,7 +1,7 @@
 package com.example.healthcare.kafka;
 
-import com.example.healthcare.dto.DoctorRegisteredEvent;
-import com.example.healthcare.dto.UserRegisteredEvent;
+import com.example.healthcare.event.DoctorRegisteredEvent;
+import com.example.healthcare.event.UserRegisteredEvent;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.service.PatientProfileService;
 import lombok.RequiredArgsConstructor;
@@ -17,16 +17,23 @@ public class UserRegisteredConsumer {
     private final PatientProfileService patientProfileService;
     private final DoctorProfileService doctorProfileService;
 
-    @KafkaListener(topics = "patient-registered", groupId = "healthcare-service")
+    @KafkaListener(
+            topics = "user-registered",
+            groupId = "healthcare-user-group",
+            containerFactory = "userKafkaListenerFactory"
+    )
     public void consumePatientEvent(UserRegisteredEvent event) {
         log.info("Creating patient profile for userId={}", event.getUserId());
         patientProfileService.createPatientProfile(event);
     }
 
-    @KafkaListener(topics = "doctor-registered", groupId = "healthcare-service")
+    @KafkaListener(
+            topics = "doctor-registered",
+            groupId = "healthcare-doctor-group",
+            containerFactory = "doctorKafkaListenerFactory"
+    )
     public void consumeDoctorEvent(DoctorRegisteredEvent event) {
         log.info("Creating doctor profile for userId={}", event.getUserId());
         doctorProfileService.createDoctorProfile(event);
     }
 }
-

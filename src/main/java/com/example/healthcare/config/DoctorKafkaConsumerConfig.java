@@ -1,6 +1,6 @@
 package com.example.healthcare.config;
 
-import com.example.healthcare.dto.UserRegisteredEvent;
+import com.example.healthcare.event.DoctorRegisteredEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,20 +15,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaConsumerConfig {
+public class DoctorKafkaConsumerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, UserRegisteredEvent> consumerFactory() {
-        JsonDeserializer<UserRegisteredEvent> deserializer =
-                new JsonDeserializer<>(UserRegisteredEvent.class);
+    public ConsumerFactory<String, DoctorRegisteredEvent> doctorConsumerFactory() {
+
+        JsonDeserializer<DoctorRegisteredEvent> deserializer =
+                new JsonDeserializer<>(DoctorRegisteredEvent.class);
+
         deserializer.addTrustedPackages("*");
+        deserializer.setUseTypeHeaders(false);
 
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);  // ✅ FIXED
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "healthcare-service");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "healthcare-doctor-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         return new DefaultKafkaConsumerFactory<>(
@@ -39,13 +42,13 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserRegisteredEvent>
-    kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, DoctorRegisteredEvent>
+    doctorKafkaListenerFactory() {
 
-        ConcurrentKafkaListenerContainerFactory<String, UserRegisteredEvent> factory =
+        ConcurrentKafkaListenerContainerFactory<String, DoctorRegisteredEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(doctorConsumerFactory());
         return factory;
     }
 }

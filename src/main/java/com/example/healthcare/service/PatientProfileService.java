@@ -1,9 +1,8 @@
 package com.example.healthcare.service;
 
-import com.example.healthcare.dto.DoctorProfileUpdateDto;
 import com.example.healthcare.dto.PatientProfileDTO;
 import com.example.healthcare.dto.PatientProfileUpdateDto;
-import com.example.healthcare.dto.UserRegisteredEvent;
+import com.example.healthcare.event.UserRegisteredEvent;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
