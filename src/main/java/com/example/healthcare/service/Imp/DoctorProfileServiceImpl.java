@@ -11,6 +11,7 @@ import com.example.healthcare.service.DoctorProfileService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,12 +33,14 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                     .id(userId)
                     .fullName(event.getUsername())
                     .email(event.getEmail())
-                    .specialization(null)
+                    .specialization("0")
                     .yearsOfExperience(0)
                     .contactNumber(null)
+                    .gender(event.getGender())
+                    .country(event.getCountry())
+                    .dateOfBirth(LocalDate.parse(event.getDateOfBirth()))
                     .status(Status.ACTIVE)
                     .build();
-
             doctorProfileRepository.save(profile);
         }
     }

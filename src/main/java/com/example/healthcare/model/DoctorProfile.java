@@ -1,10 +1,12 @@
 package com.example.healthcare.model;
 
+import com.example.healthcare.enums.Gender;
 import com.example.healthcare.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,11 +40,18 @@ public class DoctorProfile {
     @Column(nullable = true)
     private int yearsOfExperience;
 
-    @Column(nullable = true)
     private String workingAT;
 
-    @Column(nullable = true)
     private String contactNumber;
+
+
+    private LocalDate dateOfBirth;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+
+    private String country;
 
     private String profileImage;
 

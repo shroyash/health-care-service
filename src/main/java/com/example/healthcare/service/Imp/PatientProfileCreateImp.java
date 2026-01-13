@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,6 +35,9 @@ public class PatientProfileCreateImp implements PatientProfileService {
                     .fullName(event.getUsername())
                     .email(event.getEmail())
                     .contactNumber(null)
+                    .country(event.getCountry())
+                    .dateOfBirth(LocalDate.parse(event.getDateOfBirth()))
+                    .gender(event.getGender())
                     .status(Status.ACTIVE)
                     .build();
             log.info("Created patient profile: {}", profile);

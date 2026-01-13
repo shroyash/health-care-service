@@ -3,6 +3,7 @@ package com.example.healthcare.repository;
 import com.example.healthcare.dto.AppointmentFullDto;
 import com.example.healthcare.dto.DoctorAppointmentDto;
 import com.example.healthcare.dto.PatientAppointmentDto;
+import com.example.healthcare.dto.WeeklyAppointmentCountDto;
 import com.example.healthcare.model.Appointment;
 import com.example.healthcare.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -139,4 +140,19 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         ORDER BY a.appointmentDate DESC
     """)
     List<AppointmentFullDto> findAllAppointmentsWithDoctorAndPatient();
+
+    @Query("""
+    SELECT new com.example.healthcare.dto.WeeklyAppointmentCountDto(
+        FUNCTION('DAYNAME', a.appointmentDate),
+        COUNT(a)
+    )
+    FROM Appointment a
+    WHERE a.appointmentDate BETWEEN :start AND :end
+    GROUP BY FUNCTION('DAYNAME', a.appointmentDate)
+""")
+    List<WeeklyAppointmentCountDto> countAppointmentsByDayOfWeek(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
 }

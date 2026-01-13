@@ -67,6 +67,14 @@ public class AdminDashboardController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("patients/gender-count")
+
+    public ResponseEntity<ApiResponse<GenderCountResponseDto>> getPatientsGenderCount() {
+        GenderCountResponseDto genderCountResponseDto = adminDashboardStatusService.getPatientsGenderCount();
+        ApiResponse<GenderCountResponseDto> response = new ApiResponse<>(true, "Patients stats fetched successfully", genderCountResponseDto);
+        return ResponseEntity.ok(response);
+    }
+
     // Suspend a patient
     @PutMapping("/suspend/{patientId}")
     public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable UUID patientId) {

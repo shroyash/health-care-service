@@ -1,7 +1,7 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.AppointmentFullDto;
-import com.example.healthcare.dto.PatientsStats;
+import com.example.healthcare.dto.*;
+import com.example.healthcare.enums.Gender;
 import com.example.healthcare.feign.AuthServiceClient;
 import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.repository.AppointmentRepository;
@@ -11,11 +11,11 @@ import com.example.healthcare.service.AdminDashboardStatusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -99,6 +99,54 @@ public class AdminDashboardStatusServiceImpl implements AdminDashboardStatusServ
             log.error("Error fetching recent appointments: {}", e.getMessage(), e);
             return Collections.emptyList(); // fallback
         }
+    }
+
+    @Override
+    public GenderCountResponseDto getPatientsGenderCount() {
+            long male = 0;
+            long female = 0;
+
+            List<GenderCountDto> result = patientRepository.countByGender();
+
+            for (GenderCountDto dto : result) {
+                if (dto.getGender() == Gender.MALE) {
+                    male = dto.getCount();
+                } else if (dto.getGender() == Gender.FEMALE) {
+                    female = dto.getCount();
+                }
+            }
+
+            return new GenderCountResponseDto(male, female);
+        }
+
+    @Override
+    public List<WeeklyAppointmentCountDto> getWeeklyAppointments() {
+
+        LocalDate startOfWeek = LocalDate.now().with(DayOfWeek.SUNDAY);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        LocalDateTime start = startOfWeek.atStartOfDay();
+        LocalDateTime end = endOfWeek.atTime(LocalTime.MAX);
+
+        List<WeeklyAppointmentCountDto> dbResult =
+                appointmentRepository.countAppointmentsByDayOfWeek(start, end);
+
+        Map<String, Long> map = new HashMap<>();
+        for (WeeklyAppointmentCountDto dto : dbResult) {
+            map.put(dto.getDay().toUpperCase(), dto.getCount());
+        }
+
+        List<WeeklyAppointmentCountDto> response = new ArrayList<>();
+        for (DayOfWeek day : DayOfWeek.values()) {
+            response.add(
+                    new WeeklyAppointmentCountDto(
+                            day.name(),
+                            map.getOrDefault(day.name(), 0L)
+                    )
+            );
+        }
+
+        return response;
     }
 
 }
