@@ -140,8 +140,12 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                 .yearsOfExperience(doctor.getYearsOfExperience())
                 .workingAT(doctor.getWorkingAT())
                 .contactNumber(doctor.getContactNumber())
+                .dateOfBirth(doctor.getDateOfBirth().toString())
+                .gender(doctor.getGender().name())
+                .country(doctor.getCountry())
                 .profileImgUrl(doctor.getProfileImage())
                 .status(doctor.getStatus().name())
                 .build();
     }
+
 }

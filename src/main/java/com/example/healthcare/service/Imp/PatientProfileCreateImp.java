@@ -65,20 +65,27 @@ public class PatientProfileCreateImp implements PatientProfileService {
 
         patientProfileRepository.save(profile);
     }
-
     @Override
     public List<PatientProfileDTO> getAllPatients() {
+
         List<PatientProfile> patients = patientProfileRepository.findAll();
+
         return patients.stream()
                 .map(patient -> PatientProfileDTO.builder()
                         .patientId(patient.getId())
                         .fullName(patient.getFullName())
                         .email(patient.getEmail())
                         .contactNumber(patient.getContactNumber())
+                        .profileImgUrl(patient.getProfileImage())
+                        .dateOfBirth(patient.getDateOfBirth().toString())
+                        .gender(patient.getGender().name())
+                        .country(patient.getCountry())
+                        .status(patient.getStatus().name())
                         .build()
                 )
                 .collect(Collectors.toList());
     }
+
 
 
     // Service layer
@@ -111,7 +118,6 @@ public class PatientProfileCreateImp implements PatientProfileService {
     }
 
 
-    // Helper method to map entity to DTO
     private PatientProfileDTO mapToDto(PatientProfile profile) {
         return PatientProfileDTO.builder()
                 .patientId(profile.getId())
@@ -120,8 +126,12 @@ public class PatientProfileCreateImp implements PatientProfileService {
                 .contactNumber(profile.getContactNumber())
                 .status(profile.getStatus().name())
                 .profileImgUrl(profile.getProfileImage())
+                .country(profile.getCountry())
+                .dateOfBirth(profile.getDateOfBirth().toString())
+                .gender(profile.getGender().name())
                 .build();
     }
+
 
 
 

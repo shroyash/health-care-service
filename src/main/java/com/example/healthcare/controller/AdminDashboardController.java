@@ -68,10 +68,16 @@ public class AdminDashboardController {
     }
 
     @GetMapping("patients/gender-count")
-
     public ResponseEntity<ApiResponse<GenderCountResponseDto>> getPatientsGenderCount() {
         GenderCountResponseDto genderCountResponseDto = adminDashboardStatusService.getPatientsGenderCount();
         ApiResponse<GenderCountResponseDto> response = new ApiResponse<>(true, "Patients stats fetched successfully", genderCountResponseDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("patients/weekly-appointments")
+    public ResponseEntity<ApiResponse<List<WeeklyAppointmentCountDto>>> getWeeklyAppointments() {
+        List<WeeklyAppointmentCountDto> WeeklyAppointmentCountDto = adminDashboardStatusService.getWeeklyAppointments();
+        ApiResponse<List<WeeklyAppointmentCountDto>> response = new ApiResponse<>(true, "Patients stats fetched successfully", WeeklyAppointmentCountDto);
         return ResponseEntity.ok(response);
     }
 
