@@ -2,6 +2,7 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.*;
 import com.example.healthcare.enums.Gender;
+import com.example.healthcare.enums.Status;
 import com.example.healthcare.feign.AuthServiceClient;
 import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.repository.AppointmentRepository;
@@ -74,7 +75,7 @@ public class AdminDashboardStatusServiceImpl implements AdminDashboardStatusServ
 
     @Override
     public PatientsStats getPatientStats() {
-        long activePatients = patientRepository.countByStatus("ACTIVE");
+        long activePatients = patientRepository.countByStatus(Status.ACTIVE);
         long totalPatients = patientRepository.count();
         long totalCompletedAppointments = appointmentRepository.countByStatus(AppointmentStatus.COMPLETED);
         return new PatientsStats(activePatients,totalPatients,totalCompletedAppointments);

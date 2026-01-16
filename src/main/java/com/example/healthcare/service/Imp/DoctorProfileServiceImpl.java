@@ -130,7 +130,6 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     }
 
 
-    // ----------------- Helper -----------------
     private DoctorProfileResponseDto mapToDto(DoctorProfile doctor) {
         return DoctorProfileResponseDto.builder()
                 .doctorProfileId(doctor.getId())
@@ -140,12 +139,25 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                 .yearsOfExperience(doctor.getYearsOfExperience())
                 .workingAT(doctor.getWorkingAT())
                 .contactNumber(doctor.getContactNumber())
-                .dateOfBirth(doctor.getDateOfBirth().toString())
-                .gender(doctor.getGender().name())
+                .dateOfBirth(
+                        doctor.getDateOfBirth() != null
+                                ? doctor.getDateOfBirth().toString()
+                                : null
+                )
+                .gender(
+                        doctor.getGender() != null
+                                ? doctor.getGender().name()
+                                : null
+                )
                 .country(doctor.getCountry())
                 .profileImgUrl(doctor.getProfileImage())
-                .status(doctor.getStatus().name())
+                .status(
+                        doctor.getStatus() != null
+                                ? doctor.getStatus().name()
+                                : null
+                )
                 .build();
     }
+
 
 }

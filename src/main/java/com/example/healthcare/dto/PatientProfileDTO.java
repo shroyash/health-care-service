@@ -1,10 +1,9 @@
 package com.example.healthcare.dto;
 
-import com.example.healthcare.enums.Gender;
+
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Data

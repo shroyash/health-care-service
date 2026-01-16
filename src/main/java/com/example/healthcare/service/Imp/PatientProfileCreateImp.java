@@ -11,6 +11,7 @@ import com.example.healthcare.service.PatientProfileService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,6 +47,7 @@ public class PatientProfileCreateImp implements PatientProfileService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PatientProfileDTO getPatientProfile(UUID userId) {
         PatientProfile patientProfile = patientProfileRepository
@@ -65,30 +67,17 @@ public class PatientProfileCreateImp implements PatientProfileService {
 
         patientProfileRepository.save(profile);
     }
+
+    @Transactional(readOnly = true)
     @Override
     public List<PatientProfileDTO> getAllPatients() {
-
-        List<PatientProfile> patients = patientProfileRepository.findAll();
-
-        return patients.stream()
-                .map(patient -> PatientProfileDTO.builder()
-                        .patientId(patient.getId())
-                        .fullName(patient.getFullName())
-                        .email(patient.getEmail())
-                        .contactNumber(patient.getContactNumber())
-                        .profileImgUrl(patient.getProfileImage())
-                        .dateOfBirth(patient.getDateOfBirth().toString())
-                        .gender(patient.getGender().name())
-                        .country(patient.getCountry())
-                        .status(patient.getStatus().name())
-                        .build()
-                )
-                .collect(Collectors.toList());
+        return patientProfileRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .toList();
     }
 
 
-
-    // Service layer
     public PatientProfileDTO suspendPatient(UUID patientId) {
         PatientProfile profile = patientProfileRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
@@ -118,19 +107,32 @@ public class PatientProfileCreateImp implements PatientProfileService {
     }
 
 
-    private PatientProfileDTO mapToDto(PatientProfile profile) {
+    private PatientProfileDTO mapToDto(PatientProfile patient) {
         return PatientProfileDTO.builder()
-                .patientId(profile.getId())
-                .fullName(profile.getFullName())
-                .email(profile.getEmail())
-                .contactNumber(profile.getContactNumber())
-                .status(profile.getStatus().name())
-                .profileImgUrl(profile.getProfileImage())
-                .country(profile.getCountry())
-                .dateOfBirth(profile.getDateOfBirth().toString())
-                .gender(profile.getGender().name())
+                .patientId(patient.getId())
+                .fullName(patient.getFullName())
+                .email(patient.getEmail())
+                .contactNumber(patient.getContactNumber())
+                .profileImgUrl(patient.getProfileImage())
+                .dateOfBirth(
+                        patient.getDateOfBirth() != null
+                                ? patient.getDateOfBirth().toString()
+                                : null
+                )
+                .gender(
+                        patient.getGender() != null
+                                ? patient.getGender().name()
+                                : null
+                )
+                .country(patient.getCountry())
+                .status(
+                        patient.getStatus() != null
+                                ? patient.getStatus().name()
+                                : null
+                )
                 .build();
     }
+
 
 
 

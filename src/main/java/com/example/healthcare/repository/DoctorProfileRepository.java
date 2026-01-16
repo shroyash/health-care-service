@@ -18,8 +18,5 @@ public interface DoctorProfileRepository extends JpaRepository<DoctorProfile, UU
     List<DoctorProfile> findBySpecialization(String specialization);
     List<DoctorProfile> findByYearsOfExperienceBetween(int start, int end);
     List<DoctorProfile> findByYearsOfExperienceGreaterThanEqual(int years);
-    long count();
-    @EntityGraph(value = "DoctorProfile.withSchedules", type = EntityGraph.EntityGraphType.LOAD)
-    List<DoctorProfile> findAll(); //
 }
 

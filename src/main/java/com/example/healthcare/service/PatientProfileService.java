@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-@Service
+
 public interface PatientProfileService {
     void createPatientProfile(UserRegisteredEvent event);
     PatientProfileDTO getPatientProfile(UUID userId);

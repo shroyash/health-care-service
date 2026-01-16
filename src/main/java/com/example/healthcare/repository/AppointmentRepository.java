@@ -142,13 +142,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<AppointmentFullDto> findAllAppointmentsWithDoctorAndPatient();
 
     @Query("""
-    SELECT new com.example.healthcare.dto.WeeklyAppointmentCountDto(
-        FUNCTION('DAYNAME', a.appointmentDate),
-        COUNT(a)
-    )
-    FROM Appointment a
-    WHERE a.appointmentDate BETWEEN :start AND :end
-    GROUP BY FUNCTION('DAYNAME', a.appointmentDate)
+SELECT new com.example.healthcare.dto.WeeklyAppointmentCountDto(
+    TRIM(TO_CHAR(a.appointmentDate, 'Day')),
+    COUNT(a.id)
+)
+FROM Appointment a
+WHERE a.appointmentDate BETWEEN :start AND :end
+GROUP BY TRIM(TO_CHAR(a.appointmentDate, 'Day'))
+ORDER BY MIN(a.appointmentDate)
 """)
     List<WeeklyAppointmentCountDto> countAppointmentsByDayOfWeek(
             @Param("start") LocalDateTime start,
