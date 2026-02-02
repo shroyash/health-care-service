@@ -1,6 +1,8 @@
 package com.example.healthcare.service.Imp;
 
 
+import com.example.healthcare.dto.CheckupTypeCountDto;
+import com.example.healthcare.dto.DailyAppointmentCount;
 import com.example.healthcare.dto.DoctorAppointmentDto;
 import com.example.healthcare.dto.DoctorDashboardStatsDto;
 import com.example.healthcare.model.DoctorProfile;
@@ -58,11 +60,33 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
     }
 
     @Override
-    public List<DoctorAppointmentDto> getAppointments(UUID userID){
+    public List<DoctorAppointmentDto> getAppointments(UUID userID) {
         DoctorProfile doctorProfile = doctorProfileRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found for user"));
 
         return appointmentRepository
                 .findUpcomingAppointmentsByDoctor(userID);
     }
+
+    @Override
+    public List<DailyAppointmentCount> getDoctorWeeklyAppointments(Long doctorId) {
+
+        LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.atTime(23, 59, 59);
+
+        return appointmentRepository.getWeeklyAppointmentCount(
+                doctorId,
+                startDateTime,
+                endDateTime
+        );
+    }
+
+    @Override
+    public List<CheckupTypeCountDto> getAppointmentCountByCheckupType(Long doctorId) {
+        return appointmentRepository.countAppointmentsByCheckupType(doctorId);
+    }
+
 }

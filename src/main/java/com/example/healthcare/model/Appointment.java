@@ -1,6 +1,7 @@
 package com.example.healthcare.model;
 
 import com.example.healthcare.enums.AppointmentStatus;
+import com.example.healthcare.enums.DoctorCheckType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,7 +40,9 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
 
-    private String checkupType;
+    @Enumerated(EnumType.STRING)
+    private DoctorCheckType checkupType;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

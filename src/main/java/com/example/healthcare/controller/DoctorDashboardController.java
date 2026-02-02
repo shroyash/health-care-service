@@ -1,6 +1,8 @@
 package com.example.healthcare.controller;
 
 import com.example.healthcare.dto.ApiResponse;
+import com.example.healthcare.dto.CheckupTypeCountDto;
+import com.example.healthcare.dto.DailyAppointmentCount;
 import com.example.healthcare.dto.DoctorDashboardStatsDto;
 import com.example.healthcare.service.DoctorDashboardService;
 import com.example.healthcare.utils.JwtUtils;
@@ -8,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -16,6 +19,7 @@ import java.util.UUID;
 public class DoctorDashboardController {
 
     private final DoctorDashboardService doctorDashboardService;
+
 
     @GetMapping
     public ResponseEntity<ApiResponse<DoctorDashboardStatsDto>> getDoctorDashboard(
@@ -38,4 +42,21 @@ public class DoctorDashboardController {
                 new ApiResponse<>(true, "Today's appointments fetched successfully", appointments)
         );
     }
+
+    @GetMapping("/doctor/{doctorId}/weekly-count")
+    public ApiResponse<List<DailyAppointmentCount>> getDoctorWeeklyAppointmentCount(
+            @PathVariable Long doctorId
+    ) {
+        List<DailyAppointmentCount> dailyAppointmentCounts = doctorDashboardService.getDoctorWeeklyAppointments(doctorId);
+        return new ApiResponse<>(true, "Weekly count for doctor fetched successfully", dailyAppointmentCounts);
+    }
+
+    @GetMapping("/doctor/{doctorId}/checkup-count")
+    public ApiResponse<List<CheckupTypeCountDto>> getAppointmentCountByCheckupType(
+            @PathVariable Long doctorId
+    ) {
+        List<CheckupTypeCountDto> counts = doctorDashboardService.getAppointmentCountByCheckupType(doctorId);
+        return new ApiResponse<>(true, "Appointment counts by checkup type fetched successfully", counts);
+    }
+
 }

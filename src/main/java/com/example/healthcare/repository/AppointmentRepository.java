@@ -1,9 +1,6 @@
 package com.example.healthcare.repository;
 
-import com.example.healthcare.dto.AppointmentFullDto;
-import com.example.healthcare.dto.DoctorAppointmentDto;
-import com.example.healthcare.dto.PatientAppointmentDto;
-import com.example.healthcare.dto.WeeklyAppointmentCountDto;
+import com.example.healthcare.dto.*;
 import com.example.healthcare.model.Appointment;
 import com.example.healthcare.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -154,6 +151,36 @@ ORDER BY MIN(a.appointmentDate)
     List<WeeklyAppointmentCountDto> countAppointmentsByDayOfWeek(
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
+    );
+
+    @Query("""
+        SELECT 
+            DATE(a.appointmentDate) AS date,
+            COUNT(a.id) AS count
+        FROM Appointment a
+        WHERE a.doctor.id = :doctorId
+        AND a.appointmentDate BETWEEN :startDate AND :endDate
+        GROUP BY DATE(a.appointmentDate)
+        ORDER BY DATE(a.appointmentDate)
+    """)
+    List<DailyAppointmentCount> getWeeklyAppointmentCount(
+            Long doctorId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    );
+
+    @Query("""
+        SELECT new com.example.healthcare.dto.CheckupTypeCountDto(
+            a.checkupType,
+            COUNT(a.id)
+        )
+        FROM Appointment a
+        WHERE a.doctor.id = :doctorId
+        GROUP BY a.checkupType
+        ORDER BY a.checkupType
+    """)
+    List<CheckupTypeCountDto> countAppointmentsByCheckupType(
+            @Param("doctorId") Long doctorId
     );
 
 }
