@@ -15,12 +15,12 @@ public class AppointmentRequestDto {
     private UUID doctorId;
     private String doctorName;
     private String patientName;
-    private String day;
+    private String date;
     private String startTime;
     private String endTime;
     private String status;
     private String notes;
-    Long requestId;
+    private Long requestId;
     private Long appointmentId;
     private String meetingLink;
     private String meetingToken;

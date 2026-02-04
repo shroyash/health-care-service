@@ -2,6 +2,8 @@ package com.example.healthcare.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -9,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class DoctorScheduleDto {
+
     private List<ScheduleDto> schedules;
 
     @Data
@@ -16,9 +19,9 @@ public class DoctorScheduleDto {
     @AllArgsConstructor
     @Builder
     public static class ScheduleDto {
-        private String dayOfWeek;
-        private String startTime;
-        private String endTime;
+        private LocalDate scheduleDate;
+        private LocalTime startTime;
+        private LocalTime endTime;
         private boolean available;
     }
 }

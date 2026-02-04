@@ -3,6 +3,7 @@ package com.example.healthcare.service.Imp;
 import com.example.healthcare.dto.AppointmentRequestDto;
 import com.example.healthcare.enums.AppointmentRequestStatus;
 import com.example.healthcare.enums.AppointmentStatus;
+import com.example.healthcare.enums.DoctorCheckType;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.exceptions.UnauthorizedException;
 import com.example.healthcare.model.*;
@@ -25,7 +26,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -49,12 +49,13 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         PatientProfile patient = patientProfileRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
+        // Use actual date instead of day
         AppointmentRequest request = AppointmentRequest.builder()
                 .patientId(patient.getId())
                 .patientFullName(patientUserName)
                 .doctorId(dto.getDoctorId())
                 .doctorFullName(dto.getDoctorName())
-                .day(dto.getDay())
+                .date(dto.getDate())  // <-- updated
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
                 .status(AppointmentRequestStatus.PENDING)
@@ -68,7 +69,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         notificationService.sendNotification(
                 dto.getDoctorId().toString(),
                 "New Appointment Request",
-                "Patient " + patientUserName + " requested an appointment.",
+                "Patient " + patientUserName + " requested an appointment on " + dto.getDate(),
                 "APPOINTMENT_REQUEST"
         );
     }
@@ -101,6 +102,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                 .toList();
     }
 
+    // UPDATE STATUS (APPROVE / REJECT)
     @Override
     @Transactional
     public AppointmentRequestDto updateStatus(Long requestId, String status, String token) {
@@ -126,35 +128,33 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
 
         AppointmentRequestDto dto = toDto(request);
 
-        // ✅ Only create appointment when APPROVED
         if (newStatus == AppointmentRequestStatus.APPROVED) {
 
             PatientProfile patient = patientProfileRepository.findById(request.getPatientId())
                     .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-            // Find available schedule
+            // Find available schedule by exact date + startTime
             DoctorSchedule schedule = doctor.getSchedules().stream()
-                    .filter(s -> s.getDayOfWeek().equalsIgnoreCase(request.getDay())
+                    .filter(s -> s.getScheduleDate().equals(LocalDate.parse(request.getDate()))
                             && s.getStartTime().equals(request.getStartTime())
                             && s.isAvailable())
                     .findFirst()
                     .orElseThrow(() ->
                             new ResourceNotFoundException("Selected schedule not available"));
 
+            // Mark schedule as booked
             schedule.setAvailable(false);
             schedule.setUpdatedAt(LocalDateTime.now());
             doctorProfileRepository.save(doctor);
 
-            // Appointment date
+            // Appointment datetime
             LocalDateTime appointmentDate = LocalDateTime.of(
-                    LocalDate.now(),
+                    LocalDate.parse(request.getDate()),
                     LocalTime.parse(request.getStartTime())
             );
 
-            // Generate meeting token
             String meetingToken = UUID.randomUUID().toString();
 
-            // Create appointment WITHOUT meeting link first
             Appointment appointment = Appointment.builder()
                     .doctor(doctor)
                     .patient(patient)
@@ -162,30 +162,26 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                     .appointmentDate(appointmentDate)
                     .meetingToken(meetingToken)
                     .status(AppointmentStatus.SCHEDULED)
-                    .checkupType("General")
+                    .checkupType(DoctorCheckType.GENERAL)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
 
-            // Save to generate appointment ID
             appointmentRepository.save(appointment);
 
-            // Build meeting link using APPOINTMENT ID
-            String meetingLink =
-                    "http://localhost:3000/meet/" + appointment.getId()
-                            + "?token=" + meetingToken;
+            // Build meeting link
+            String meetingLink = "http://localhost:3000/meet/" + appointment.getId()
+                    + "?token=" + meetingToken;
 
-            // Update appointment with meeting link
             appointment.setMeetingLink(meetingLink);
             appointment.setUpdatedAt(LocalDateTime.now());
             appointmentRepository.save(appointment);
 
-            // Add appointment info to DTO
             dto.setAppointmentId(appointment.getId());
             dto.setMeetingLink(meetingLink);
             dto.setMeetingToken(meetingToken);
 
-            // Email notification
+            // Send emails
             String subject = "Appointment Scheduled";
             String body = "Your appointment with Dr. " + doctor.getFullName()
                     + " is scheduled for " + appointmentDate
@@ -194,7 +190,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
             emailService.sendEmail(patient.getEmail(), subject, body);
             emailService.sendEmail(doctor.getEmail(), subject, body);
 
-            // App notifications
+            // Send notifications
             notificationService.sendNotification(
                     patient.getId().toString(),
                     "Appointment Confirmed",
@@ -221,8 +217,6 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         return dto;
     }
 
-
-
     // DTO Mapper
     private AppointmentRequestDto toDto(AppointmentRequest r) {
         return AppointmentRequestDto.builder()
@@ -230,7 +224,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                 .doctorId(r.getDoctorId())
                 .doctorName(r.getDoctorFullName())
                 .patientName(r.getPatientFullName())
-                .day(r.getDay())
+                .date(r.getDate())        // <-- updated
                 .startTime(r.getStartTime())
                 .endTime(r.getEndTime())
                 .notes(r.getNotes())

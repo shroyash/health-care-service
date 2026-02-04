@@ -12,6 +12,7 @@ import com.example.healthcare.service.PatientDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,8 +32,6 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
                 .findById(userId)
                 .orElseThrow(() -> new RuntimeException("Patient profile not found"));
 
-
-
         // count appointments for that patient
         return appointmentRepository.countUpcomingAppointmentsByPatient(userId);
     }
@@ -50,8 +49,10 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
 
     @Override
     public List<DoctorWithScheduleDto> getAllAvailableDoctor() {
-        // Fetch all doctors with schedules (use EntityGraph or fetch join)
+        // Fetch all doctors with schedules
         List<DoctorProfile> doctors = doctorProfileRepository.findAll();
+
+        LocalDate today = LocalDate.now();
 
         // Map to DTO
         return doctors.stream().map(doctor -> DoctorWithScheduleDto.builder()
@@ -62,10 +63,12 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
                 .phone(doctor.getContactNumber())
                 .schedules(
                         doctor.getSchedules().stream()
+                                // Only future schedules
+                                .filter(s -> !s.getScheduleDate().isBefore(today)) // scheduleDate >= today
                                 .map(schedule -> DoctorWithScheduleDto.ScheduleDto.builder()
-                                        .dayOfWeek(schedule.getDayOfWeek())
-                                        .startTime(schedule.getStartTime())
-                                        .endTime(schedule.getEndTime())
+                                        .date(schedule.getScheduleDate().toString()) // send actual date
+                                        .startTime(schedule.getStartTime().toString())
+                                        .endTime(schedule.getEndTime().toString())
                                         .available(schedule.isAvailable())
                                         .build()
                                 ).collect(Collectors.toList())
@@ -73,9 +76,4 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
                 .build()
         ).collect(Collectors.toList());
     }
-
-
-
-
-
 }

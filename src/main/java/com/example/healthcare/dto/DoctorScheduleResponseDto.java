@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,9 +27,10 @@ public class DoctorScheduleResponseDto {
     @Builder
     public static class ScheduleInfo {
         private Long scheduleId;
+        private LocalDate scheduleDate;
         private String dayOfWeek;
-        private String startTime;
-        private String endTime;
+        private LocalTime startTime;
+        private LocalTime endTime;
         private boolean available;
         private boolean isLocked;
         private LocalDateTime createdAt;

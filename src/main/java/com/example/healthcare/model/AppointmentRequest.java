@@ -21,14 +21,13 @@ public class AppointmentRequest {
 
     private UUID patientId;
 
-    private String patientFullName; // Who requested
+    private String patientFullName;
 
     private UUID doctorId;
 
     private String doctorFullName;
 
-    private String day;
-
+    private String date;
     private String startTime;
 
     private String endTime;
@@ -40,5 +39,4 @@ public class AppointmentRequest {
 
     @Builder.Default
     private LocalDateTime requestedAt = LocalDateTime.now();
-
 }

@@ -3,7 +3,9 @@ package com.example.healthcare.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @NoArgsConstructor
@@ -16,15 +18,15 @@ public class DoctorSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String dayOfWeek;
-    private String startTime;
-    private String endTime;
+    private LocalDate scheduleDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private boolean available;
     private boolean isLocked = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id", nullable = false)
-    @ToString.Exclude  // Prevent circular reference issues
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private DoctorProfile doctorProfile;
 
