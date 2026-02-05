@@ -35,27 +35,28 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Upcoming appointments for doctor
     @Query("""
-        SELECT new com.example.healthcare.dto.DoctorAppointmentDto(
-            a.id,
-            p.id,
-            p.fullName,
-            a.appointmentDate,
-            s.startTime,
-            s.endTime,
-            a.checkupType,
-            a.meetingLink,
-            a.status
-        )
-        FROM Appointment a
-        JOIN a.patient p
-        LEFT JOIN a.schedule s
-        WHERE a.doctor.id = :doctorId
-        AND a.status = 'SCHEDULED'
-        ORDER BY a.appointmentDate ASC
-    """)
+    SELECT new com.example.healthcare.dto.DoctorAppointmentDto(
+        a.id,
+        p.id,
+        p.fullName,
+        a.appointmentDate,
+        s.startTime,
+        s.endTime,
+        a.checkupType,
+        a.meetingLink,
+        a.status
+    )
+    FROM Appointment a
+    JOIN a.patient p
+    LEFT JOIN a.schedule s
+    WHERE a.doctor.id = :doctorId
+      AND a.status = com.example.healthcare.enums.AppointmentStatus.SCHEDULED
+    ORDER BY a.appointmentDate ASC
+""")
     List<DoctorAppointmentDto> findUpcomingAppointmentsByDoctor(
             @Param("doctorId") UUID doctorId
     );
+
 
     // Count appointments in time range
     long countByAppointmentDateBetween(LocalDateTime start, LocalDateTime end);

@@ -135,7 +135,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
 
             // Find available schedule by exact date + startTime
             DoctorSchedule schedule = doctor.getSchedules().stream()
-                    .filter(s -> s.getScheduleDate().equals(LocalDate.parse(request.getDate()))
+                    .filter(s -> s.getScheduleDate().equals(request.getDate())
                             && s.getStartTime().equals(request.getStartTime())
                             && s.isAvailable())
                     .findFirst()
@@ -147,11 +147,11 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
             schedule.setUpdatedAt(LocalDateTime.now());
             doctorProfileRepository.save(doctor);
 
-            // Appointment datetime
             LocalDateTime appointmentDate = LocalDateTime.of(
-                    LocalDate.parse(request.getDate()),
-                    LocalTime.parse(request.getStartTime())
+                    request.getDate(),       // LocalDate
+                    request.getStartTime()   // LocalTime
             );
+
 
             String meetingToken = UUID.randomUUID().toString();
 
@@ -224,7 +224,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                 .doctorId(r.getDoctorId())
                 .doctorName(r.getDoctorFullName())
                 .patientName(r.getPatientFullName())
-                .date(r.getDate())        // <-- updated
+                .date(r.getDate())
                 .startTime(r.getStartTime())
                 .endTime(r.getEndTime())
                 .notes(r.getNotes())

@@ -23,46 +23,37 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
 
     private final AppointmentRepository appointmentRepository;
     private final AppointmentRequestRepository requestRepository;
-    private final DoctorProfileRepository doctorProfileRepository;
 
     public DoctorDashboardServiceImpl(AppointmentRepository appointmentRepository,
                                       AppointmentRequestRepository requestRepository, DoctorProfileRepository doctorProfileRepository) {
         this.appointmentRepository = appointmentRepository;
         this.requestRepository = requestRepository;
-        this.doctorProfileRepository = doctorProfileRepository;
     }
 
     @Override
     public DoctorDashboardStatsDto getDoctorDashboard(UUID doctorProfileId) {
 
-        DoctorProfile doctorProfile = doctorProfileRepository.findById(doctorProfileId)
-                .orElseThrow(() -> new RuntimeException("Doctor profile not found for user"));
-
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX);
 
-        // 2. Fetch stats
         long totalAppointmentsToday = appointmentRepository
                 .countByDoctorIdAndAppointmentDateBetween(doctorProfileId, startOfDay, endOfDay);
 
         long totalPatients = appointmentRepository
                 .countDistinctPatientsByDoctor(doctorProfileId);
 
-//        long pendingRequests = requestRepository
-//                .countByDoctorIdAndStatus(doctorProfileId, AppointmentRequestStatus.PENDING);
+        long totalAppointmentsReq = requestRepository
+                .countPendingAppointmentRequestsByDoctor(doctorProfileId);
 
-        // 4. Build DTO
         return DoctorDashboardStatsDto.builder()
                 .totalAppointmentsToday(totalAppointmentsToday)
                 .totalPatients(totalPatients)
-                .pendingRequests(0)
+                .pendingRequests(totalAppointmentsReq)
                 .build();
     }
 
     @Override
     public List<DoctorAppointmentDto> getAppointments(UUID userID) {
-        DoctorProfile doctorProfile = doctorProfileRepository.findById(userID)
-                .orElseThrow(() -> new RuntimeException("Doctor profile not found for user"));
 
         return appointmentRepository
                 .findUpcomingAppointmentsByDoctor(userID);

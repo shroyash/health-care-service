@@ -4,7 +4,9 @@ import com.example.healthcare.enums.AppointmentRequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
@@ -20,17 +22,14 @@ public class AppointmentRequest {
     private Long id;
 
     private UUID patientId;
-
     private String patientFullName;
 
     private UUID doctorId;
-
     private String doctorFullName;
 
-    private String date;
-    private String startTime;
-
-    private String endTime;
+    private LocalDate date;       // changed
+    private LocalTime startTime;  // changed
+    private LocalTime endTime;    // changed
 
     @Enumerated(EnumType.STRING)
     private AppointmentRequestStatus status;

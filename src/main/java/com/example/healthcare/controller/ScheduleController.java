@@ -28,8 +28,6 @@ public class ScheduleController {
             @CookieValue(name = "jwt") String token) {
 
         UUID userId = JwtUtils.extractUserIdFromToken(token);
-
-
         scheduleService.saveWeeklySchedule(dto, userId);
 
         ApiResponse<Void> response = new ApiResponse<>(true, "Doctor schedule created successfully!", null);
