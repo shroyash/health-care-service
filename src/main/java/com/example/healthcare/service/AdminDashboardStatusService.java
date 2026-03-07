@@ -1,9 +1,9 @@
 package com.example.healthcare.service;
 
-import com.example.healthcare.dto.AppointmentFullDto;
-import com.example.healthcare.dto.GenderCountResponseDto;
-import com.example.healthcare.dto.PatientsStats;
-import com.example.healthcare.dto.WeeklyAppointmentCountDto;
+import com.example.healthcare.dto.response.AppointmentFullDto;
+import com.example.healthcare.dto.response.GenderCountResponseDto;
+import com.example.healthcare.dto.response.PatientsStats;
+import com.example.healthcare.dto.response.WeeklyAppointmentCountDto;
 
 import java.util.List;
 

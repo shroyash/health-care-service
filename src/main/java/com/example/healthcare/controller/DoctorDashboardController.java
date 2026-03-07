@@ -1,9 +1,9 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.ApiResponse;
-import com.example.healthcare.dto.CheckupTypeCountDto;
-import com.example.healthcare.dto.DailyAppointmentCount;
-import com.example.healthcare.dto.DoctorDashboardStatsDto;
+import com.example.healthcare.dto.response.ApiResponse;
+import com.example.healthcare.dto.response.CheckupTypeCountDto;
+import com.example.healthcare.dto.response.DailyAppointmentCount;
+import com.example.healthcare.dto.response.DoctorDashboardStatsDto;
 import com.example.healthcare.service.DoctorDashboardService;
 import com.example.healthcare.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;

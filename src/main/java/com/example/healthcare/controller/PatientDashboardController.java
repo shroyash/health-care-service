@@ -1,9 +1,9 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.ApiResponse;
-import com.example.healthcare.dto.DoctorWithScheduleDto;
-import com.example.healthcare.dto.PatientAppointmentDto;
-import com.example.healthcare.dto.PatientDashboardStatsDto;
+import com.example.healthcare.dto.response.ApiResponse;
+import com.example.healthcare.dto.response.DoctorWithScheduleDto;
+import com.example.healthcare.dto.response.PatientAppointmentDto;
+import com.example.healthcare.dto.response.PatientDashboardStatsDto;
 import com.example.healthcare.service.AdminDashboardStatusService;
 import com.example.healthcare.service.PatientDashboardService;
 import com.example.healthcare.utils.JwtUtils;
@@ -45,6 +45,16 @@ public class    PatientDashboardController {
 
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Upcoming confirmed appointments fetched successfully", appointments)
+        );
+    }
+
+    @GetMapping("/appointments")
+    public ResponseEntity<ApiResponse<List<PatientAppointmentDto>>> getAppointments(@CookieValue("jwt") String token) {
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
+        List<PatientAppointmentDto> appointments = patientDashboardService.getAppointments(userId);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "appointments fetched successfully", appointments)
         );
     }
 

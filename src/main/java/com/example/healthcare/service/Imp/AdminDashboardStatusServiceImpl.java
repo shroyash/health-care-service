@@ -1,6 +1,6 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.*;
+import com.example.healthcare.dto.response.*;
 import com.example.healthcare.enums.Gender;
 import com.example.healthcare.enums.Status;
 import com.example.healthcare.feign.AuthServiceClient;

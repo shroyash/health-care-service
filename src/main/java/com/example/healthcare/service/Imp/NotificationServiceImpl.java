@@ -1,6 +1,6 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.Notification;
+import com.example.healthcare.dto.request.Notification;
 import com.example.healthcare.model.NotificationEntity;
 import com.example.healthcare.repository.NotificationRepository;
 import com.example.healthcare.service.NotificationService;

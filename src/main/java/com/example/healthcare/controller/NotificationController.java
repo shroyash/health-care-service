@@ -1,6 +1,6 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.Notification;
+import com.example.healthcare.dto.request.Notification;
 import com.example.healthcare.model.NotificationEntity;
 import com.example.healthcare.service.NotificationService;
 import org.springframework.web.bind.annotation.*;

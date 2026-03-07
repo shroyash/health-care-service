@@ -1,6 +1,6 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.*;
+import com.example.healthcare.dto.response.*;
 import com.example.healthcare.service.AdminDashboardStatusService;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.service.PatientProfileService;

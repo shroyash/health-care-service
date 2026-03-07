@@ -1,6 +1,7 @@
 package com.example.healthcare.repository;
 
-import com.example.healthcare.dto.*;
+import com.example.healthcare.dto.request.DoctorAppointmentDto;
+import com.example.healthcare.dto.response.*;
 import com.example.healthcare.model.Appointment;
 import com.example.healthcare.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -73,30 +74,52 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     """)
     long countUpcomingAppointmentsByPatient(@Param("patientId") UUID patientId);
 
-    // Upcoming appointments for patient
     @Query("""
-        SELECT new com.example.healthcare.dto.PatientAppointmentDto(
-            a.id,
-            d.id,
-            d.fullName,
-            a.appointmentDate,
-            s.startTime,
-            s.endTime,
-            a.checkupType,
-            a.meetingLink,
-            a.status
-        )
-        FROM Appointment a
-        JOIN a.doctor d
-        JOIN a.schedule s
-        WHERE a.patient.id = :patientId
-        AND a.status = 'SCHEDULED'
-        AND a.appointmentDate > CURRENT_TIMESTAMP
-        ORDER BY a.appointmentDate ASC
-    """)
-    List<PatientAppointmentDto> findUpcomingAppointmentsByPatient(
+    SELECT new com.example.healthcare.dto.PatientAppointmentDto(
+        a.id,
+        d.id,
+        d.fullName,
+        a.appointmentDate,
+        s.startTime,
+        s.endTime,
+        a.checkupType,
+        a.meetingLink,
+        a.status
+    )
+    FROM Appointment a
+    JOIN a.doctor d
+    LEFT JOIN a.schedule s
+    WHERE a.patient.id = :patientId
+    ORDER BY a.appointmentDate DESC
+""")
+    List<PatientAppointmentDto> findAllAppointmentsByPatient(
             @Param("patientId") UUID patientId
     );
+    @Query("""
+    SELECT new com.example.healthcare.dto.PatientAppointmentDto(
+        a.id,
+        d.id,
+        d.fullName,
+        a.appointmentDate,
+        s.startTime,
+        s.endTime,
+        a.checkupType,
+        a.meetingLink,
+        a.status
+    )
+    FROM Appointment a
+    JOIN a.doctor d
+    LEFT JOIN a.schedule s
+    WHERE a.patient.id = :patientId
+      AND a.status = com.example.healthcare.enums.AppointmentStatus.SCHEDULED
+      AND a.appointmentDate > :now
+    ORDER BY a.appointmentDate ASC
+""")
+    List<PatientAppointmentDto> findUpcomingAppointmentsByPatient(
+            @Param("patientId") UUID patientId,
+            @Param("now") LocalDateTime now
+    );
+
 
     // Completed or cancelled appointments for patient
     @Query("""

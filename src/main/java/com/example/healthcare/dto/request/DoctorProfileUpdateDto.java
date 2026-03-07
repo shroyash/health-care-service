@@ -1,0 +1,17 @@
+package com.example.healthcare.dto.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
+@Builder
+@Data
+@AllArgsConstructor
+public class DoctorProfileUpdateDto {
+    private String fullName;
+    private String email;
+    private String specialization;
+    private Integer yearsOfExperience;
+    private String workingAT;
+    private String contactNumber;
+}

@@ -1,10 +1,10 @@
 package com.example.healthcare.service;
 
 
-import com.example.healthcare.dto.CheckupTypeCountDto;
-import com.example.healthcare.dto.DailyAppointmentCount;
-import com.example.healthcare.dto.DoctorAppointmentDto;
-import com.example.healthcare.dto.DoctorDashboardStatsDto;
+import com.example.healthcare.dto.response.CheckupTypeCountDto;
+import com.example.healthcare.dto.response.DailyAppointmentCount;
+import com.example.healthcare.dto.request.DoctorAppointmentDto;
+import com.example.healthcare.dto.response.DoctorDashboardStatsDto;
 
 import java.util.List;
 import java.util.UUID;

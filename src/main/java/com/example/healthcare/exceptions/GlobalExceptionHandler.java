@@ -1,7 +1,7 @@
 package com.example.healthcare.exceptions;
 
 
-import com.example.healthcare.dto.ApiResponse;
+import com.example.healthcare.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

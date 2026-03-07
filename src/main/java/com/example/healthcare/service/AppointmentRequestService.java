@@ -1,8 +1,6 @@
 package com.example.healthcare.service;
 
-import com.example.healthcare.dto.AppointmentDoctorReceiveResponseDto;
-import com.example.healthcare.dto.AppointmentPatientRequestResponseDto;
-import com.example.healthcare.dto.AppointmentRequestDto;
+import com.example.healthcare.dto.request.AppointmentRequestDto;
 
 import java.util.List;
 import java.util.UUID;

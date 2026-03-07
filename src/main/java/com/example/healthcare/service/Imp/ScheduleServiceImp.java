@@ -1,8 +1,8 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.DoctorScheduleDto;
-import com.example.healthcare.dto.DoctorScheduleResponseDto;
-import com.example.healthcare.dto.DoctorScheduleUpdateDTO;
+import com.example.healthcare.dto.request.DoctorScheduleDto;
+import com.example.healthcare.dto.response.DoctorScheduleResponseDto;
+import com.example.healthcare.dto.response.DoctorScheduleUpdateDTO;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.DoctorSchedule;

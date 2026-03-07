@@ -1,16 +1,12 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.ApiResponse;
-import com.example.healthcare.dto.DoctorProfileResponseDto;
-import com.example.healthcare.dto.DoctorProfileUpdateDto;
-import com.example.healthcare.model.DoctorProfile;
+import com.example.healthcare.dto.response.ApiResponse;
+import com.example.healthcare.dto.response.DoctorProfileResponseDto;
+import com.example.healthcare.dto.request.DoctorProfileUpdateDto;
 import com.example.healthcare.service.DoctorProfileService;
 import com.example.healthcare.service.FileStorageService;
 import com.example.healthcare.utils.JwtUtils;
-import jakarta.ws.rs.CookieParam;
 import lombok.AllArgsConstructor;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

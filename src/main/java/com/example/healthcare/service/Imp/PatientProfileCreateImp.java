@@ -1,7 +1,7 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.PatientProfileDTO;
-import com.example.healthcare.dto.PatientProfileUpdateDto;
+import com.example.healthcare.dto.response.PatientProfileDTO;
+import com.example.healthcare.dto.request.PatientProfileUpdateDto;
 import com.example.healthcare.event.UserRegisteredEvent;
 import com.example.healthcare.enums.Status;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor

@@ -1,8 +1,7 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.DoctorWithScheduleDto;
-import com.example.healthcare.dto.PatientAppointmentDto;
-import com.example.healthcare.exceptions.ResourceNotFoundException;
+import com.example.healthcare.dto.response.DoctorWithScheduleDto;
+import com.example.healthcare.dto.response.PatientAppointmentDto;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.PatientProfile;
 import com.example.healthcare.repository.AppointmentRepository;
@@ -13,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,13 +38,11 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
 
     @Override
     public List<PatientAppointmentDto> getUpcomingAppointments(UUID userId) {
-        // find patient profile by userId
-        PatientProfile patientProfile = patientProfileRepository
-                .findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
-
-        // fetch upcoming appointments for that patient
-        return appointmentRepository.findUpcomingAppointmentsByPatient(userId);
+        return appointmentRepository.findUpcomingAppointmentsByPatient(userId, LocalDateTime.now() );
+    }
+    @Override
+    public List<PatientAppointmentDto> getAppointments(UUID userId) {
+        return appointmentRepository.findAllAppointmentsByPatient(userId);
     }
 
     @Override

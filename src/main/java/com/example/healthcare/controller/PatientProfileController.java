@@ -1,9 +1,8 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.ApiResponse;
-import com.example.healthcare.dto.PatientProfileDTO;
-import com.example.healthcare.dto.PatientProfileUpdateDto;
-import com.example.healthcare.model.PatientProfile;
+import com.example.healthcare.dto.response.ApiResponse;
+import com.example.healthcare.dto.response.PatientProfileDTO;
+import com.example.healthcare.dto.request.PatientProfileUpdateDto;
 import com.example.healthcare.service.FileStorageService;
 import com.example.healthcare.service.PatientProfileService;
 import com.example.healthcare.utils.JwtUtils;

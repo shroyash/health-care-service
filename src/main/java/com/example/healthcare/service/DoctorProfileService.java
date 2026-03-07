@@ -1,7 +1,7 @@
 package com.example.healthcare.service;
 
-import com.example.healthcare.dto.DoctorProfileResponseDto;
-import com.example.healthcare.dto.DoctorProfileUpdateDto;
+import com.example.healthcare.dto.response.DoctorProfileResponseDto;
+import com.example.healthcare.dto.request.DoctorProfileUpdateDto;
 import com.example.healthcare.event.DoctorRegisteredEvent;
 
 import java.util.List;

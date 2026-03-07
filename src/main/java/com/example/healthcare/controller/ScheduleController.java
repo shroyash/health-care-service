@@ -1,6 +1,9 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.*;
+import com.example.healthcare.dto.request.DoctorScheduleDto;
+import com.example.healthcare.dto.response.ApiResponse;
+import com.example.healthcare.dto.response.DoctorScheduleResponseDto;
+import com.example.healthcare.dto.response.DoctorScheduleUpdateDTO;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.DoctorSchedule;

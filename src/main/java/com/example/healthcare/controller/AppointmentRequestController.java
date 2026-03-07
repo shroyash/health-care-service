@@ -1,7 +1,7 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.ApiResponse;
-import com.example.healthcare.dto.AppointmentRequestDto;
+import com.example.healthcare.dto.response.ApiResponse;
+import com.example.healthcare.dto.request.AppointmentRequestDto;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.model.Appointment;
 import com.example.healthcare.repository.AppointmentRepository;
@@ -84,14 +84,20 @@ public class AppointmentRequestController {
                 .build());
     }
 
-    @GetMapping("/appointments/{id}/access")
+    @GetMapping("/{id}/access")
     public ResponseEntity<?> validateMeetingToken(
             @PathVariable Long id,
-            @RequestParam String token  // this is the meeting token in the URL
+            @RequestParam String token,
+            @CookieValue(name = "jwt", required = false) String jwt
     ) {
         // Fetch the appointment
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+
+
+        UUID userId = JwtUtils.extractUserIdFromToken(jwt);
+
+        String userIdString = userId.toString();
 
         // Validate meeting token
         if (!appointment.getMeetingToken().equals(token)) {
@@ -107,12 +113,12 @@ public class AppointmentRequestController {
         // Return necessary details for frontend
         return ResponseEntity.ok(Map.of(
                 "appointmentId", appointment.getId(),
+                "userId" ,userIdString,
                 "doctorName", appointment.getDoctor().getFullName(),
                 "patientName", appointment.getPatient().getFullName(),
                 "appointmentTime", appointmentTime.toString(),
                 "canJoin", canJoin
         ));
     }
-
 
 }
