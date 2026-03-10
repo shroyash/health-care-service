@@ -1,9 +1,6 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.response.ApiResponse;
-import com.example.healthcare.dto.response.CheckupTypeCountDto;
-import com.example.healthcare.dto.response.DailyAppointmentCount;
-import com.example.healthcare.dto.response.DoctorDashboardStatsDto;
+import com.example.healthcare.dto.response.*;
 import com.example.healthcare.service.DoctorDashboardService;
 import com.example.healthcare.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +37,16 @@ public class DoctorDashboardController {
         var appointments = doctorDashboardService.getAppointments(userId);
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Today's appointments fetched successfully", appointments)
+        );
+    }
+
+    @GetMapping("/appointments")
+    public ResponseEntity<ApiResponse<List<?>>> getAppointments(@CookieValue("jwt") String token) {
+        UUID userId = JwtUtils.extractUserIdFromToken(token);
+        var appointments = doctorDashboardService.getAllAppointments(userId);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "appointments fetched successfully", appointments)
         );
     }
 

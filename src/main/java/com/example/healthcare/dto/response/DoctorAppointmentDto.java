@@ -1,4 +1,4 @@
-package com.example.healthcare.dto.request;
+package com.example.healthcare.dto.response;
 
 import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.enums.DoctorCheckType;

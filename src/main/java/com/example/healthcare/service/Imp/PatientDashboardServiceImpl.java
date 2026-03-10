@@ -8,6 +8,7 @@ import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.repository.PatientProfileRepository;
 import com.example.healthcare.service.PatientDashboardService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,10 +37,13 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
         return appointmentRepository.countUpcomingAppointmentsByPatient(userId);
     }
 
+    @Transactional
     @Override
     public List<PatientAppointmentDto> getUpcomingAppointments(UUID userId) {
+        appointmentRepository.cancelExpiredForPatient(userId, LocalDateTime.now());
         return appointmentRepository.findUpcomingAppointmentsByPatient(userId, LocalDateTime.now() );
     }
+
     @Override
     public List<PatientAppointmentDto> getAppointments(UUID userId) {
         return appointmentRepository.findAllAppointmentsByPatient(userId);

@@ -3,13 +3,14 @@ package com.example.healthcare.service.Imp;
 
 import com.example.healthcare.dto.response.CheckupTypeCountDto;
 import com.example.healthcare.dto.response.DailyAppointmentCount;
-import com.example.healthcare.dto.request.DoctorAppointmentDto;
+import com.example.healthcare.dto.response.DoctorAppointmentDto;
 import com.example.healthcare.dto.response.DoctorDashboardStatsDto;
 import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.AppointmentRequestRepository;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.service.DoctorDashboardService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,11 +52,20 @@ public class DoctorDashboardServiceImpl implements DoctorDashboardService {
                 .build();
     }
 
+    @Transactional
     @Override
     public List<DoctorAppointmentDto> getAppointments(UUID userID) {
-
+        appointmentRepository.cancelExpiredForDoctor(userID, LocalDateTime.now());
         return appointmentRepository
                 .findUpcomingAppointmentsByDoctor(userID);
+    }
+
+    @Transactional
+    @Override
+    public List<DoctorAppointmentDto> getAllAppointments(UUID userId) {
+        appointmentRepository.cancelExpiredForDoctor(userId, LocalDateTime.now());
+        return appointmentRepository
+                .findAllAppointmentsByDoctor(userId);
     }
 
     @Override

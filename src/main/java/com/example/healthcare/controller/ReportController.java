@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -83,7 +84,7 @@ public class ReportController {
 
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByPatient(
-            @PathVariable Long patientId) {
+            @PathVariable UUID patientId) {
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)
                 .message("Reports fetched successfully")
@@ -93,11 +94,12 @@ public class ReportController {
 
     @GetMapping("/doctor/{doctorId}")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByDoctor(
-            @PathVariable Long doctorId) {
+            @PathVariable UUID doctorId) {
+        List<ReportResponseDto> reportResponseDtos = reportService.getReportsByDoctor(doctorId);
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)
                 .message("Reports fetched successfully")
-                .data(reportService.getReportsByDoctor(doctorId))
+                .data(reportResponseDtos)
                 .build());
     }
 }

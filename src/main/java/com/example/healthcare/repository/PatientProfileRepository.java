@@ -16,7 +16,7 @@ public interface PatientProfileRepository extends JpaRepository<PatientProfile, 
     long countByStatus(Status status);
 
     @Query("""
-        SELECT new com.example.healthcare.dto.GenderCountDto(
+        SELECT new com.example.healthcare.dto.response.GenderCountDto(
             p.gender,
             COUNT(p)
         )

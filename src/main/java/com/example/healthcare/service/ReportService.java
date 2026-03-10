@@ -4,6 +4,7 @@ package com.example.healthcare.service;
 import com.example.healthcare.dto.request.ReportMedicineDto;
 import com.example.healthcare.dto.request.ReportRequestDto;
 import com.example.healthcare.dto.response.ReportResponseDto;
+import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.enums.ReportStatus;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.exceptions.UnauthorizedException;
@@ -28,7 +29,6 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final AppointmentRepository appointmentRepository;
-    private final JwtUtils jwtUtils;
 
 
     @Transactional
@@ -62,7 +62,14 @@ public class ReportService {
 
         medicines.forEach(m -> m.setMedicalReport(report));
 
-        return mapToResponseDto(reportRepository.save(report));
+        MedicalReport saved = reportRepository.save(report);
+
+        // Mark appointment as COMPLETED when doctor creates a report
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointment.setUpdatedAt(LocalDateTime.now());
+        appointmentRepository.save(appointment);
+
+        return mapToResponseDto(saved);
     }
 
     // ── Update ────────────────────────────────────────────
@@ -138,7 +145,7 @@ public class ReportService {
     }
 
     // ── Get By Patient ────────────────────────────────────
-    public List<ReportResponseDto> getReportsByPatient(Long patientId) {
+    public List<ReportResponseDto> getReportsByPatient(UUID patientId) {
         return reportRepository.findByPatientId(patientId)
                 .stream()
                 .map(this::mapToResponseDto)
@@ -146,7 +153,7 @@ public class ReportService {
     }
 
     // ── Get By Doctor ─────────────────────────────────────
-    public List<ReportResponseDto> getReportsByDoctor(Long doctorId) {
+    public List<ReportResponseDto> getReportsByDoctor(UUID doctorId) {
         return reportRepository.findByDoctorId(doctorId)
                 .stream()
                 .map(this::mapToResponseDto)

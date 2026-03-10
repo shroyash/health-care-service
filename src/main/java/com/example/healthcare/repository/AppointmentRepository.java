@@ -1,10 +1,11 @@
 package com.example.healthcare.repository;
 
-import com.example.healthcare.dto.request.DoctorAppointmentDto;
+import com.example.healthcare.dto.response.DoctorAppointmentDto;
 import com.example.healthcare.dto.response.*;
 import com.example.healthcare.model.Appointment;
 import com.example.healthcare.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -36,7 +37,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Upcoming appointments for doctor
     @Query("""
-    SELECT new com.example.healthcare.dto.DoctorAppointmentDto(
+    SELECT new com.example.healthcare.dto.response.DoctorAppointmentDto(
         a.id,
         p.id,
         p.fullName,
@@ -58,6 +59,27 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("doctorId") UUID doctorId
     );
 
+    @Query("""
+    SELECT new com.example.healthcare.dto.response.DoctorAppointmentDto(
+        a.id,
+        p.id,
+        p.fullName,
+        a.appointmentDate,
+        s.startTime,
+        s.endTime,
+        a.checkupType,
+        a.meetingLink,
+        a.status
+    )
+    FROM Appointment a
+    JOIN a.patient p
+    LEFT JOIN a.schedule s
+    WHERE a.doctor.id = :doctorId
+    ORDER BY a.appointmentDate DESC
+""")
+    List<DoctorAppointmentDto> findAllAppointmentsByDoctor(
+            @Param("doctorId") UUID doctorId
+    );
 
     // Count appointments in time range
     long countByAppointmentDateBetween(LocalDateTime start, LocalDateTime end);
@@ -75,7 +97,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     long countUpcomingAppointmentsByPatient(@Param("patientId") UUID patientId);
 
     @Query("""
-    SELECT new com.example.healthcare.dto.PatientAppointmentDto(
+    SELECT new com.example.healthcare.dto.response.PatientAppointmentDto(
         a.id,
         d.id,
         d.fullName,
@@ -95,8 +117,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<PatientAppointmentDto> findAllAppointmentsByPatient(
             @Param("patientId") UUID patientId
     );
+
     @Query("""
-    SELECT new com.example.healthcare.dto.PatientAppointmentDto(
+    SELECT new com.example.healthcare.dto.response.PatientAppointmentDto(
         a.id,
         d.id,
         d.fullName,
@@ -123,7 +146,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Completed or cancelled appointments for patient
     @Query("""
-        SELECT new com.example.healthcare.dto.PatientAppointmentDto(
+        SELECT new com.example.healthcare.dto.response.PatientAppointmentDto(
             a.id,
             d.id,
             d.fullName,
@@ -146,7 +169,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Admin / full view
     @Query("""
-        SELECT new com.example.healthcare.dto.AppointmentFullDto(
+        SELECT new com.example.healthcare.dto.response.AppointmentFullDto(
             a.id,
             d.fullName,
             p.fullName,
@@ -163,7 +186,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<AppointmentFullDto> findAllAppointmentsWithDoctorAndPatient();
 
     @Query("""
-SELECT new com.example.healthcare.dto.WeeklyAppointmentCountDto(
+SELECT new com.example.healthcare.dto.response.WeeklyAppointmentCountDto(
     TRIM(TO_CHAR(a.appointmentDate, 'Day')),
     COUNT(a.id)
 )
@@ -194,7 +217,7 @@ ORDER BY MIN(a.appointmentDate)
     );
 
     @Query("""
-        SELECT new com.example.healthcare.dto.CheckupTypeCountDto(
+        SELECT new com.example.healthcare.dto.response.CheckupTypeCountDto(
             a.checkupType,
             COUNT(a.id)
         )
@@ -207,4 +230,77 @@ ORDER BY MIN(a.appointmentDate)
             @Param("doctorId") Long doctorId
     );
 
+    @Query("""
+            SELECT new com.example.healthcare.dto.response.DoctorAppointmentDto(
+                a.id,
+                p.id,
+                p.fullName,
+                a.appointmentDate,
+                s.startTime,
+                s.endTime,
+                a.checkupType,
+                a.meetingLink,
+                a.status
+            )
+            FROM Appointment a
+            JOIN a.patient p
+            LEFT JOIN a.schedule s
+            WHERE a.doctor.id = :doctorId
+              AND a.status IN (
+                com.example.healthcare.enums.AppointmentStatus.CANCELLED,
+                com.example.healthcare.enums.AppointmentStatus.COMPLETED
+              )
+            ORDER BY a.appointmentDate DESC
+            """)
+    List<DoctorAppointmentDto> findDoctorHistory(@Param("doctorId") UUID doctorId);
+
+    @Query("""
+            SELECT new com.example.healthcare.dto.response.PatientAppointmentDto(
+                a.id,
+                d.id,
+                d.fullName,
+                a.appointmentDate,
+                s.startTime,
+                s.endTime,
+                a.checkupType,
+                a.meetingLink,
+                a.status
+            )
+            FROM Appointment a
+            JOIN a.doctor d
+            LEFT JOIN a.schedule s
+            WHERE a.patient.id = :patientId
+              AND a.status IN (
+                com.example.healthcare.enums.AppointmentStatus.CANCELLED,
+                com.example.healthcare.enums.AppointmentStatus.COMPLETED
+              )
+            ORDER BY a.appointmentDate DESC
+            """)
+    List<PatientAppointmentDto> findPatientHistory(@Param("patientId") UUID patientId);
+
+    @Modifying
+    @Query(value = """
+        UPDATE appointment a
+        SET status = 'CANCELLED'
+        FROM doctor_schedule s
+        WHERE a.schedule_id = s.id
+          AND a.doctor_id = :doctorId
+          AND a.status = 'SCHEDULED'
+          AND (a.appointment_date + s.end_time) < :now
+        """, nativeQuery = true)
+    int cancelExpiredForDoctor(@Param("doctorId") UUID doctorId,
+                               @Param("now") LocalDateTime now);
+
+    @Modifying
+    @Query(value = """
+        UPDATE appointment a
+        SET status = 'CANCELLED'
+        FROM doctor_schedule s
+        WHERE a.schedule_id = s.id
+          AND a.patient_id = :patientId
+          AND a.status = 'SCHEDULED'
+          AND (a.appointment_date + s.end_time) < :now
+        """, nativeQuery = true)
+    int cancelExpiredForPatient(@Param("patientId") UUID patientId,
+                                @Param("now") LocalDateTime now);
 }
