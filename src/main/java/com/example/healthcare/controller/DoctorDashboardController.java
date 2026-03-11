@@ -29,7 +29,7 @@ public class DoctorDashboardController {
         );
     }
 
-    @GetMapping("/upcomming-appointments")
+    @GetMapping("/upcoming-appointments")
     public ResponseEntity<ApiResponse<?>> getUpcommingAppointments(
             @CookieValue("jwt") String token
     ) {
@@ -50,20 +50,36 @@ public class DoctorDashboardController {
         );
     }
 
-    @GetMapping("/doctor/{doctorId}/weekly-count")
-    public ApiResponse<List<DailyAppointmentCount>> getDoctorWeeklyAppointmentCount(
-            @PathVariable Long doctorId
+    @GetMapping("/weekly-count")
+    public ApiResponse<List<DailyAppointmentCountDto>> getDoctorWeeklyAppointmentCount(
+            @CookieValue("jwt") String token
     ) {
-        List<DailyAppointmentCount> dailyAppointmentCounts = doctorDashboardService.getDoctorWeeklyAppointments(doctorId);
-        return new ApiResponse<>(true, "Weekly count for doctor fetched successfully", dailyAppointmentCounts);
+        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
+        List<DailyAppointmentCountDto> dailyAppointmentCounts =
+                doctorDashboardService.getDoctorWeeklyAppointments(doctorId);
+
+        return new ApiResponse<>(
+                true,
+                "Weekly count for doctor fetched successfully",
+                dailyAppointmentCounts
+        );
     }
 
-    @GetMapping("/doctor/{doctorId}/checkup-count")
+    @GetMapping("/checkup-count")
     public ApiResponse<List<CheckupTypeCountDto>> getAppointmentCountByCheckupType(
-            @PathVariable Long doctorId
+            @CookieValue("jwt") String token
     ) {
-        List<CheckupTypeCountDto> counts = doctorDashboardService.getAppointmentCountByCheckupType(doctorId);
-        return new ApiResponse<>(true, "Appointment counts by checkup type fetched successfully", counts);
+
+        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
+
+        List<CheckupTypeCountDto> counts =
+                doctorDashboardService.getAppointmentCountByCheckupType(doctorId);
+
+        return new ApiResponse<>(
+                true,
+                "Appointment counts by checkup type fetched successfully",
+                counts
+        );
     }
 
 }

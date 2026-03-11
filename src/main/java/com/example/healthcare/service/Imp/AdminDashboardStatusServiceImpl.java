@@ -8,6 +8,7 @@ import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.DoctorProfileRepository;
 import com.example.healthcare.repository.PatientProfileRepository;
+import com.example.healthcare.repository.ReportRepository;
 import com.example.healthcare.service.AdminDashboardStatusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,18 +27,20 @@ public class AdminDashboardStatusServiceImpl implements AdminDashboardStatusServ
     private final PatientProfileRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
     private final AuthServiceClient authServiceClient;
+    private final ReportRepository reportRepository;
 
 
     public AdminDashboardStatusServiceImpl(
             DoctorProfileRepository doctorRepository,
             PatientProfileRepository patientRepository,
             AppointmentRepository appointmentRepository,
-            AuthServiceClient authServiceClient
+            AuthServiceClient authServiceClient, ReportRepository reportRepository
     ) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.appointmentRepository = appointmentRepository;
         this.authServiceClient = authServiceClient;
+        this.reportRepository = reportRepository;
     }
 
     @Override
@@ -148,6 +151,11 @@ public class AdminDashboardStatusServiceImpl implements AdminDashboardStatusServ
         }
 
         return response;
+    }
+
+    @Override
+    public long getTotalReportWritten(UUID patientId) {
+        return reportRepository.countByPatientId(patientId);
     }
 
 }

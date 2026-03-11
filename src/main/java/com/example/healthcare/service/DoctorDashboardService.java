@@ -2,7 +2,7 @@ package com.example.healthcare.service;
 
 
 import com.example.healthcare.dto.response.CheckupTypeCountDto;
-import com.example.healthcare.dto.response.DailyAppointmentCount;
+import com.example.healthcare.dto.response.DailyAppointmentCountDto;
 import com.example.healthcare.dto.response.DoctorAppointmentDto;
 import com.example.healthcare.dto.response.DoctorDashboardStatsDto;
 
@@ -13,6 +13,6 @@ public interface DoctorDashboardService {
     DoctorDashboardStatsDto getDoctorDashboard(UUID userId);
     List<DoctorAppointmentDto> getAppointments(UUID userId);
     List<DoctorAppointmentDto> getAllAppointments(UUID userId);
-    List<DailyAppointmentCount> getDoctorWeeklyAppointments(Long doctorId);
-    List<CheckupTypeCountDto> getAppointmentCountByCheckupType(Long doctorId);
+    List<DailyAppointmentCountDto> getDoctorWeeklyAppointments(UUID doctorId);
+    List<CheckupTypeCountDto> getAppointmentCountByCheckupType(UUID doctorId);
 }

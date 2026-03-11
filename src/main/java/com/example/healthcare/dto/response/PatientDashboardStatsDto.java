@@ -11,4 +11,5 @@ import java.util.List;
 public class PatientDashboardStatsDto {
     private long totalUpcomingAppointments;
     private long totalActiveDoctor;
+    private long totalReportWritten;
 }

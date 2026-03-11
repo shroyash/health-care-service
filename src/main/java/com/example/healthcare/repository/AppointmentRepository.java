@@ -201,17 +201,34 @@ ORDER BY MIN(a.appointmentDate)
     );
 
     @Query("""
-        SELECT 
-            DATE(a.appointmentDate) AS date,
-            COUNT(a.id) AS count
-        FROM Appointment a
-        WHERE a.doctor.id = :doctorId
-        AND a.appointmentDate BETWEEN :startDate AND :endDate
-        GROUP BY DATE(a.appointmentDate)
-        ORDER BY DATE(a.appointmentDate)
-    """)
-    List<DailyAppointmentCount> getWeeklyAppointmentCount(
-            Long doctorId,
+    SELECT 
+        DATE(a.appointmentDate) AS date,
+        COUNT(a.id) AS count
+    FROM Appointment a
+    WHERE a.doctor.id = :doctorId
+    AND a.appointmentDate BETWEEN :startDate AND :endDate
+    GROUP BY DATE(a.appointmentDate)
+    ORDER BY DATE(a.appointmentDate)
+""")
+    List<DailyAppointmentCount> getDoctorWeeklyAppointmentCount(
+            UUID doctorId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    );
+
+
+    @Query("""
+    SELECT 
+        DATE(a.appointmentDate) AS date,
+        COUNT(a.id) AS count
+    FROM Appointment a
+    WHERE a.patient.id = :patientId
+    AND a.appointmentDate BETWEEN :startDate AND :endDate
+    GROUP BY DATE(a.appointmentDate)
+    ORDER BY DATE(a.appointmentDate)
+""")
+    List<DailyAppointmentCount> getPatientWeeklyAppointmentCount(
+            UUID patientId,
             LocalDateTime startDate,
             LocalDateTime endDate
     );
@@ -227,7 +244,7 @@ ORDER BY MIN(a.appointmentDate)
         ORDER BY a.checkupType
     """)
     List<CheckupTypeCountDto> countAppointmentsByCheckupType(
-            @Param("doctorId") Long doctorId
+            @Param("doctorId") UUID doctorId
     );
 
     @Query("""
@@ -303,4 +320,14 @@ ORDER BY MIN(a.appointmentDate)
         """, nativeQuery = true)
     int cancelExpiredForPatient(@Param("patientId") UUID patientId,
                                 @Param("now") LocalDateTime now);
+
+    @Query("""
+    SELECT new com.example.healthcare.dto.response.AppointmentStatusCountDto(
+        a.status, COUNT(a)
+    )
+    FROM Appointment a
+    WHERE a.patient.id = :patientId
+    GROUP BY a.status
+""")
+    List<AppointmentStatusCountDto> getStatusCountByPatient(UUID patientId);
 }

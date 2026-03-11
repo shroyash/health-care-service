@@ -1,5 +1,7 @@
 package com.example.healthcare.service;
 
+import com.example.healthcare.dto.response.AppointmentStatusCountDto;
+import com.example.healthcare.dto.response.DailyAppointmentCountDto;
 import com.example.healthcare.dto.response.DoctorWithScheduleDto;
 import com.example.healthcare.dto.response.PatientAppointmentDto;
 import java.util.List;
@@ -14,4 +16,8 @@ public interface PatientDashboardService {
     List<PatientAppointmentDto> getUpcomingAppointments(UUID userId);
 
     List<DoctorWithScheduleDto> getAllAvailableDoctor();
+
+    List<DailyAppointmentCountDto> getPatientWeeklyAppointments(UUID patientId);
+
+    List<AppointmentStatusCountDto> getStatusCount(UUID patientId);
 }

@@ -1,9 +1,6 @@
 package com.example.healthcare.controller;
 
-import com.example.healthcare.dto.response.ApiResponse;
-import com.example.healthcare.dto.response.DoctorWithScheduleDto;
-import com.example.healthcare.dto.response.PatientAppointmentDto;
-import com.example.healthcare.dto.response.PatientDashboardStatsDto;
+import com.example.healthcare.dto.response.*;
 import com.example.healthcare.service.AdminDashboardStatusService;
 import com.example.healthcare.service.PatientDashboardService;
 import com.example.healthcare.utils.JwtUtils;
@@ -30,8 +27,9 @@ public class    PatientDashboardController {
         UUID userId = JwtUtils.extractUserIdFromToken(token);
         long totalUpcoming = patientDashboardService.getTotalUpcomingAppointments(userId);
         long totalActiveDoctor = adminDashboardStatusService.getTotalDoctors();
+        long totalReportWritten = adminDashboardStatusService.getTotalReportWritten(userId);
 
-        PatientDashboardStatsDto data = new PatientDashboardStatsDto(totalUpcoming,totalActiveDoctor);
+        PatientDashboardStatsDto data = new PatientDashboardStatsDto(totalUpcoming,totalActiveDoctor,totalReportWritten);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Patient stats confirmed fetched successfully", data)
@@ -67,6 +65,28 @@ public class    PatientDashboardController {
         );
 
 
+    }
+
+    @GetMapping("/weekly-count")
+    public ResponseEntity<ApiResponse<List<DailyAppointmentCountDto>>> getWeeklyAppointmentCount(
+            @CookieValue("jwt") String token
+    ) {
+        UUID patientId = JwtUtils.extractUserIdFromToken(token);
+        List<DailyAppointmentCountDto> counts = patientDashboardService.getPatientWeeklyAppointments(patientId);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Weekly count fetched successfully", counts)
+        );
+    }
+
+    @GetMapping("/status-count")
+    public ResponseEntity<ApiResponse<List<AppointmentStatusCountDto>>> getStatusCount(
+            @CookieValue("jwt") String token
+    ) {
+        UUID patientId = JwtUtils.extractUserIdFromToken(token);
+        List<AppointmentStatusCountDto> counts = patientDashboardService.getStatusCount(patientId);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Status count fetched successfully", counts)
+        );
     }
 
 }

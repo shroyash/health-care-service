@@ -14,4 +14,6 @@ public interface ReportRepository extends JpaRepository<MedicalReport, Long> {
     List<MedicalReport> findByDoctorId(UUID doctorId);
     Optional<MedicalReport> findByAppointmentId(Long appointmentId);
     boolean existsByAppointmentId(Long appointmentId);
+    long countByDoctorId(UUID doctorId);
+    long countByPatientId(UUID doctorId);
 }

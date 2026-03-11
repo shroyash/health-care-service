@@ -1,7 +1,6 @@
 package com.example.healthcare.service.Imp;
 
-import com.example.healthcare.dto.response.DoctorWithScheduleDto;
-import com.example.healthcare.dto.response.PatientAppointmentDto;
+import com.example.healthcare.dto.response.*;
 import com.example.healthcare.model.DoctorProfile;
 import com.example.healthcare.model.PatientProfile;
 import com.example.healthcare.repository.AppointmentRepository;
@@ -12,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -77,5 +77,30 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
                 )
                 .build()
         ).collect(Collectors.toList());
+    }
+
+    public List<DailyAppointmentCountDto> getPatientWeeklyAppointments(UUID patientId) {
+        LocalDate startOfWeek = LocalDate.now().with(DayOfWeek.MONDAY);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.atTime(23, 59, 59);
+
+        List<DailyAppointmentCount> raw = appointmentRepository.getPatientWeeklyAppointmentCount(
+                patientId,
+                startDateTime,
+                endDateTime
+        );
+
+        return raw.stream()
+                .map(item -> new DailyAppointmentCountDto(
+                        item.getDate().toString(),
+                        item.getCount()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<AppointmentStatusCountDto> getStatusCount(UUID patientId) {
+        return appointmentRepository.getStatusCountByPatient(patientId);
     }
 }

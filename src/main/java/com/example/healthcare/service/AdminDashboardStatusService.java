@@ -6,6 +6,7 @@ import com.example.healthcare.dto.response.PatientsStats;
 import com.example.healthcare.dto.response.WeeklyAppointmentCountDto;
 
 import java.util.List;
+import java.util.UUID;
 
 
 public interface AdminDashboardStatusService {
@@ -27,5 +28,6 @@ public interface AdminDashboardStatusService {
 
     List<WeeklyAppointmentCountDto> getWeeklyAppointments();
 
+    long getTotalReportWritten(UUID patientId);
 
 }
