@@ -1,5 +1,6 @@
 package com.example.healthcare.dto.response;
 
+import com.example.healthcare.enums.AppointmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AppointmentStatusCountDto {
-    private String status;
+
+    private AppointmentStatus status;
     private Long count;
+
 }

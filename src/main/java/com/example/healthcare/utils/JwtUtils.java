@@ -15,6 +15,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class JwtUtils {
 
@@ -90,10 +91,19 @@ public class JwtUtils {
         return parseToken(token).get("username", String.class);
     }
 
-    @SuppressWarnings("unchecked")
     public static List<String> extractRolesFromToken(String token) {
         logger.debug("[JwtUtils] Extracting roles from token");
-        return parseToken(token).get("roles", List.class);
+        Claims claims = parseToken(token);
+        Object roles = claims.get("roles");
+
+        if (roles instanceof List) {
+            return ((List<?>) roles).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toList());
+        } else if (roles instanceof String) {
+            return List.of((String) roles);
+        }
+        return List.of();
     }
 }
 
