@@ -14,6 +14,8 @@ public class ReportResponseDto {
     private Long appointmentId;
     private UUID patientId;
     private UUID doctorId;
+    private String patientName;
+    private String doctorName;
     private String title;
     private String diagnosis;
     private String symptoms;

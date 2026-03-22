@@ -27,6 +27,8 @@ public class ScheduleServiceImp implements ScheduleService {
 
     private final DoctorProfileRepository doctorProfileRepository;
     private final ScheduleRepository scheduleRepository;
+
+
     @Transactional
     public void saveWeeklySchedule(DoctorScheduleDto dto, UUID userId) {
         DoctorProfile doctor = doctorProfileRepository.findById(userId)
@@ -34,6 +36,17 @@ public class ScheduleServiceImp implements ScheduleService {
 
         if (dto.getSchedules() == null || dto.getSchedules().isEmpty()) {
             throw new IllegalArgumentException("No schedules provided in request");
+        }
+
+        for (DoctorScheduleDto.ScheduleDto s : dto.getSchedules()) {
+            boolean alreadyExists = scheduleRepository.existsByDoctorProfileAndScheduleDateAndStartTime(
+                    doctor, s.getScheduleDate(), s.getStartTime()
+            );
+            if (alreadyExists) {
+                throw new IllegalArgumentException(
+                        "Slot already exists: " + s.getScheduleDate() + " at " + s.getStartTime()
+                );
+            }
         }
 
         List<DoctorSchedule> scheduleList = dto.getSchedules().stream()
@@ -48,7 +61,6 @@ public class ScheduleServiceImp implements ScheduleService {
 
         scheduleRepository.saveAll(scheduleList);
     }
-
     @Transactional(readOnly = true)
     public DoctorScheduleResponseDto getDoctorScheduleWithDetails(UUID doctorProfileId) {
         DoctorProfile doctor = doctorProfileRepository.findById(doctorProfileId)

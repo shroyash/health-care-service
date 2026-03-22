@@ -29,6 +29,8 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final AppointmentRepository appointmentRepository;
+    private final DoctorProfileService doctorProfileService;
+    private final PatientProfileService patientProfileService;
 
 
     @Transactional
@@ -184,6 +186,8 @@ public class ReportService {
         dto.setAppointmentId(report.getAppointment().getId());
         dto.setPatientId(report.getPatientId());
         dto.setDoctorId(report.getDoctorId());
+        dto.setPatientName(patientProfileService.getPatientProfile(report.getPatientId()).getFullName());
+        dto.setDoctorName(doctorProfileService.getDoctorProfile(report.getDoctorId()).getFullName());
         dto.setTitle(report.getTitle());
         dto.setDiagnosis(report.getDiagnosis());
         dto.setSymptoms(report.getSymptoms());

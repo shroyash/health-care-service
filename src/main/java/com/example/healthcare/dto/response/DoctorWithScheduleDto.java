@@ -13,6 +13,7 @@ public class DoctorWithScheduleDto {
 
     private UUID doctorProfileId;
     private String name;
+    private String profileUrl;
     private String specialty;
     private String email;
     private String phone;
@@ -24,9 +25,9 @@ public class DoctorWithScheduleDto {
     @AllArgsConstructor
     @Builder
     public static class ScheduleDto {
-        private String date;       // e.g., "2026-02-04" instead of dayOfWeek
-        private String startTime;  // e.g., "10:00"
-        private String endTime;    // e.g., "16:00"
-        private boolean available; // true if the doctor is available in this slot
+        private String date;
+        private String startTime;
+        private String endTime;
+        private boolean available;
     }
 }

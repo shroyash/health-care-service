@@ -43,6 +43,10 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     private DoctorCheckType checkupType;
 
+    @OneToOne
+    @JoinColumn(name = "appointment_request_id", unique = true)
+    private AppointmentRequest appointmentRequest;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

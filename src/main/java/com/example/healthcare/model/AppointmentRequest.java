@@ -14,7 +14,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "appointment_requests")
+@Table(
+        name = "appointment_requests",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uq_patient_doctor_date_time",
+                        columnNames = {"patient_id", "doctor_id", "date", "start_time"}
+                )
+        }
+)
 public class AppointmentRequest {
 
     @Id
@@ -27,9 +35,9 @@ public class AppointmentRequest {
     private UUID doctorId;
     private String doctorFullName;
 
-    private LocalDate date;       // changed
-    private LocalTime startTime;  // changed
-    private LocalTime endTime;    // changed
+    private LocalDate date;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
     private AppointmentRequestStatus status;

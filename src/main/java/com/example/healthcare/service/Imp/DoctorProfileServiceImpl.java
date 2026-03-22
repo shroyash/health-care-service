@@ -33,7 +33,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
                     .id(userId)
                     .fullName(event.getUsername())
                     .email(event.getEmail())
-                    .specialization("0")
+                    .specialization("Generalist")
                     .yearsOfExperience(0)
                     .contactNumber(null)
                     .gender(event.getGender())

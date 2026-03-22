@@ -4,6 +4,7 @@ import com.example.healthcare.dto.request.AppointmentRequestDto;
 import com.example.healthcare.enums.AppointmentRequestStatus;
 import com.example.healthcare.enums.AppointmentStatus;
 import com.example.healthcare.enums.DoctorCheckType;
+import com.example.healthcare.exceptions.DuplicateRequestException;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.exceptions.UnauthorizedException;
 import com.example.healthcare.model.*;
@@ -47,13 +48,26 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         PatientProfile patient = patientProfileRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-        // Use actual date instead of day
+        // ✅ Check duplicate before inserting
+        boolean alreadyExists = requestRepository.existsByPatientIdAndDoctorIdAndDateAndStartTime(
+                patient.getId(),
+                dto.getDoctorId(),
+                dto.getDate(),
+                dto.getStartTime()
+        );
+
+        if (alreadyExists) {
+            throw new DuplicateRequestException(
+                    "You already requested this slot. Please wait for the doctor to respond."
+            );
+        }
+
         AppointmentRequest request = AppointmentRequest.builder()
                 .patientId(patient.getId())
                 .patientFullName(patientUserName)
                 .doctorId(dto.getDoctorId())
                 .doctorFullName(dto.getDoctorName())
-                .date(dto.getDate())  // <-- updated
+                .date(dto.getDate())
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
                 .status(AppointmentRequestStatus.PENDING)
@@ -63,7 +77,6 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
 
         requestRepository.save(request);
 
-        // Notify doctor
         notificationService.sendNotification(
                 dto.getDoctorId().toString(),
                 "New Appointment Request",
@@ -100,119 +113,137 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                 .toList();
     }
 
-        // UPDATE STATUS (APPROVE / REJECT)
-        @Override
-        @Transactional
-        public AppointmentRequestDto updateStatus(Long requestId, String status, String token) {
+    @Override
+    @Transactional
+    public AppointmentRequestDto updateStatus(Long requestId, String status, String token) {
 
-            UUID doctorUserId = JwtUtils.extractUserIdFromToken(token);
+        UUID doctorUserId = JwtUtils.extractUserIdFromToken(token);
 
-            DoctorProfile doctor = doctorProfileRepository.findById(doctorUserId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
+        DoctorProfile doctor = doctorProfileRepository.findById(doctorUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-            AppointmentRequest request = requestRepository.findById(requestId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
+        // ✅ CHANGE 1: use locked fetch instead of normal findById
+        AppointmentRequest request = requestRepository.findByIdForUpdate(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
-            // Check ownership
-            if (!request.getDoctorId().equals(doctor.getId())) {
-                throw new UnauthorizedException("Unauthorized to update this request");
-            }
+        if (!request.getDoctorId().equals(doctor.getId())) {
+            throw new UnauthorizedException("Unauthorized to update this request");
+        }
 
-            AppointmentRequestStatus newStatus =
-                    AppointmentRequestStatus.valueOf(status.toUpperCase());
+        AppointmentRequestStatus newStatus =
+                AppointmentRequestStatus.valueOf(status.toUpperCase());
 
-            request.setStatus(newStatus);
-            requestRepository.save(request);
-
+        // ✅ CHANGE 2: if already in desired state, return existing data
+        if (request.getStatus() == newStatus) {
             AppointmentRequestDto dto = toDto(request);
 
             if (newStatus == AppointmentRequestStatus.APPROVED) {
-
-                PatientProfile patient = patientProfileRepository.findById(request.getPatientId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
-
-                // Find available schedule by exact date + startTime
-                DoctorSchedule schedule = doctor.getSchedules().stream()
-                        .filter(s -> s.getScheduleDate().equals(request.getDate())
-                                && s.getStartTime().equals(request.getStartTime())
-                                && s.isAvailable())
-                        .findFirst()
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Selected schedule not available"));
-
-                // Mark schedule as booked
-                schedule.setAvailable(false);
-                schedule.setUpdatedAt(LocalDateTime.now());
-                doctorProfileRepository.save(doctor);
-
-                LocalDateTime appointmentDate = LocalDateTime.of(
-                        request.getDate(),       // LocalDate
-                        request.getStartTime()   // LocalTime
-                );
-
-                String meetingToken = UUID.randomUUID().toString();
-
-                Appointment appointment = Appointment.builder()
-                        .doctor(doctor)
-                        .patient(patient)
-                        .schedule(schedule)
-                        .appointmentDate(appointmentDate)
-                        .meetingToken(meetingToken)
-                        .status(AppointmentStatus.SCHEDULED)
-                        .checkupType(DoctorCheckType.GENERAL)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .build();
-
-                appointmentRepository.save(appointment);
-
-                // Build meeting link
-                String meetingLink = "https://localhost:3000/meet/" + appointment.getId()
-                        + "?token=" + meetingToken;
-
-                appointment.setMeetingLink(meetingLink);
-                appointment.setUpdatedAt(LocalDateTime.now());
-                appointmentRepository.save(appointment);
-
-                dto.setAppointmentId(appointment.getId());
-                dto.setMeetingLink(meetingLink);
-                dto.setMeetingToken(meetingToken);
-
-                // Send emails
-                String subject = "Appointment Scheduled";
-                String body = "Your appointment with Dr. " + doctor.getFullName()
-                        + " is scheduled for " + appointmentDate
-                        + ".\n\nJoin the meeting using this link:\n" + meetingLink;
-
-                emailService.sendEmail(patient.getEmail(), subject, body);
-                emailService.sendEmail(doctor.getEmail(), subject, body);
-
-                // Send notifications
-                notificationService.sendNotification(
-                        patient.getId().toString(),
-                        "Appointment Confirmed",
-                        "Join meeting: " + meetingLink,
-                        "APPOINTMENT_MEETING"
-                );
-
-                notificationService.sendNotification(
-                        doctor.getId().toString(),
-                        "Appointment Confirmed",
-                        "Join meeting: " + meetingLink,
-                        "APPOINTMENT_MEETING"
-                );
+                appointmentRepository.findByAppointmentRequest(request)
+                        .ifPresent(existing -> {
+                            dto.setAppointmentId(existing.getId());
+                            dto.setMeetingLink(existing.getMeetingLink());
+                            dto.setMeetingToken(existing.getMeetingToken());
+                        });
             }
+            return dto; // no emails, no notifications, just return
+        }
 
-            // Notify patient about status change
-            notificationService.sendNotification(
-                    request.getPatientId().toString(),
-                    "Appointment " + newStatus.name(),
-                    "Your appointment status is now: " + newStatus.name().toLowerCase(),
-                    "APPOINTMENT_STATUS"
+        // ✅ CHANGE 3: block changing terminal states
+        if (request.getStatus() == AppointmentRequestStatus.APPROVED ||
+                request.getStatus() == AppointmentRequestStatus.REJECTED) {
+            throw new IllegalStateException(
+                    "Request is already " + request.getStatus().name().toLowerCase()
+                            + " and cannot be changed"
+            );
+        }
+
+        request.setStatus(newStatus);
+        requestRepository.save(request);
+
+        AppointmentRequestDto dto = toDto(request);
+
+        if (newStatus == AppointmentRequestStatus.APPROVED) {
+
+            PatientProfile patient = patientProfileRepository.findById(request.getPatientId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
+
+            DoctorSchedule schedule = doctor.getSchedules().stream()
+                    .filter(s -> s.getScheduleDate().equals(request.getDate())
+                            && s.getStartTime().equals(request.getStartTime())
+                            && s.isAvailable())
+                    .findFirst()
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Selected schedule not available"));
+
+            schedule.setAvailable(false);
+            schedule.setUpdatedAt(LocalDateTime.now());
+            doctorProfileRepository.save(doctor);
+
+            LocalDateTime appointmentDate = LocalDateTime.of(
+                    request.getDate(),
+                    request.getStartTime()
             );
 
-            return dto;
+            String meetingToken = UUID.randomUUID().toString();
+
+            Appointment appointment = Appointment.builder()
+                    .doctor(doctor)
+                    .patient(patient)
+                    .schedule(schedule)
+                    .appointmentRequest(request)
+                    .appointmentDate(appointmentDate)
+                    .meetingToken(meetingToken)
+                    .status(AppointmentStatus.SCHEDULED)
+                    .checkupType(DoctorCheckType.GENERAL)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            appointmentRepository.save(appointment);
+
+            String meetingLink = "https://localhost:3000/meet/" + appointment.getId()
+                    + "?token=" + meetingToken;
+
+            appointment.setMeetingLink(meetingLink);
+            appointment.setUpdatedAt(LocalDateTime.now());
+            appointmentRepository.save(appointment);
+
+            dto.setAppointmentId(appointment.getId());
+            dto.setMeetingLink(meetingLink);
+            dto.setMeetingToken(meetingToken);
+
+            String subject = "Appointment Scheduled";
+            String body = "Your appointment with Dr. " + doctor.getFullName()
+                    + " is scheduled for " + appointmentDate
+                    + ".\n\nJoin the meeting using this link:\n" + meetingLink;
+
+            emailService.sendEmail(patient.getEmail(), subject, body);
+            emailService.sendEmail(doctor.getEmail(), subject, body);
+
+            notificationService.sendNotification(
+                    patient.getId().toString(),
+                    "Appointment Confirmed",
+                    "Join meeting: " + meetingLink,
+                    "APPOINTMENT_MEETING"
+            );
+
+            notificationService.sendNotification(
+                    doctor.getId().toString(),
+                    "Appointment Confirmed",
+                    "Join meeting: " + meetingLink,
+                    "APPOINTMENT_MEETING"
+            );
         }
+
+        notificationService.sendNotification(
+                request.getPatientId().toString(),
+                "Appointment " + newStatus.name(),
+                "Your appointment status is now: " + newStatus.name().toLowerCase(),
+                "APPOINTMENT_STATUS"
+        );
+
+        return dto;
+    }
 
     // DTO Mapper
     private AppointmentRequestDto toDto(AppointmentRequest r) {

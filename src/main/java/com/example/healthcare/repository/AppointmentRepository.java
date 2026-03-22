@@ -4,6 +4,7 @@ import com.example.healthcare.dto.response.DoctorAppointmentDto;
 import com.example.healthcare.dto.response.*;
 import com.example.healthcare.model.Appointment;
 import com.example.healthcare.enums.AppointmentStatus;
+import com.example.healthcare.model.AppointmentRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -330,4 +332,6 @@ ORDER BY MIN(a.appointmentDate)
     GROUP BY a.status
 """)
     List<AppointmentStatusCountDto> getStatusCountByPatient(UUID patientId);
+
+    Optional<Appointment> findByAppointmentRequest(AppointmentRequest appointmentRequest);
 }

@@ -28,7 +28,6 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
 
     @Override
     public long getTotalUpcomingAppointments(UUID userId) {
-        // find patient profile by userId
         PatientProfile patientProfile = patientProfileRepository
                 .findById(userId)
                 .orElseThrow(() -> new RuntimeException("Patient profile not found"));
@@ -51,15 +50,15 @@ public class PatientDashboardServiceImpl implements PatientDashboardService {
 
     @Override
     public List<DoctorWithScheduleDto> getAllAvailableDoctor() {
-        // Fetch all doctors with schedules
+
         List<DoctorProfile> doctors = doctorProfileRepository.findAll();
 
         LocalDate today = LocalDate.now();
 
-        // Map to DTO
         return doctors.stream().map(doctor -> DoctorWithScheduleDto.builder()
                 .doctorProfileId(doctor.getId())
                 .name(doctor.getFullName())
+                .profileUrl(doctor.getProfileImage())
                 .specialty(doctor.getSpecialization())
                 .email(doctor.getEmail())
                 .phone(doctor.getContactNumber())
