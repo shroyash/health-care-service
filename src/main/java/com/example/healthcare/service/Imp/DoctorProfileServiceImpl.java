@@ -133,6 +133,7 @@ public class DoctorProfileServiceImpl implements DoctorProfileService {
     private DoctorProfileResponseDto mapToDto(DoctorProfile doctor) {
         return DoctorProfileResponseDto.builder()
                 .doctorProfileId(doctor.getId())
+                .profileImg(doctor.getProfileImage())
                 .fullName(doctor.getFullName())
                 .email(doctor.getEmail())
                 .specialization(doctor.getSpecialization())

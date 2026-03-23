@@ -11,6 +11,7 @@ import java.util.UUID;
 public class PatientProfileDTO {
 
     private UUID patientId;
+    private String profileImg;
     private String fullName;
     private String email;
     private String contactNumber;

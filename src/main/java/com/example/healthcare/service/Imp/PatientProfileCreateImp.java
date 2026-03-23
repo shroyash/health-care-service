@@ -109,6 +109,7 @@ public class PatientProfileCreateImp implements PatientProfileService {
     private PatientProfileDTO mapToDto(PatientProfile patient) {
         return PatientProfileDTO.builder()
                 .patientId(patient.getId())
+                .profileImg(patient.getProfileImage())
                 .fullName(patient.getFullName())
                 .email(patient.getEmail())
                 .contactNumber(patient.getContactNumber())

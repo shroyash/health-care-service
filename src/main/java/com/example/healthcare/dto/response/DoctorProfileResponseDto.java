@@ -11,6 +11,7 @@ import java.util.UUID;
 public class DoctorProfileResponseDto {
 
     private UUID doctorProfileId;
+    private String profileImg;
     private String fullName;
     private String email;
     private String specialization;

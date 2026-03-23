@@ -122,7 +122,6 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         DoctorProfile doctor = doctorProfileRepository.findById(doctorUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
 
-        // ✅ CHANGE 1: use locked fetch instead of normal findById
         AppointmentRequest request = requestRepository.findByIdForUpdate(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
@@ -133,7 +132,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         AppointmentRequestStatus newStatus =
                 AppointmentRequestStatus.valueOf(status.toUpperCase());
 
-        // ✅ CHANGE 2: if already in desired state, return existing data
+        // If already in desired state, return existing data
         if (request.getStatus() == newStatus) {
             AppointmentRequestDto dto = toDto(request);
 
@@ -145,10 +144,10 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                             dto.setMeetingToken(existing.getMeetingToken());
                         });
             }
-            return dto; // no emails, no notifications, just return
+            return dto;
         }
 
-        // ✅ CHANGE 3: block changing terminal states
+        // Block changing terminal states
         if (request.getStatus() == AppointmentRequestStatus.APPROVED ||
                 request.getStatus() == AppointmentRequestStatus.REJECTED) {
             throw new IllegalStateException(
@@ -167,16 +166,38 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
             PatientProfile patient = patientProfileRepository.findById(request.getPatientId())
                     .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
+            // ✅ Check if a schedule slot already exists for this date and time
             DoctorSchedule schedule = doctor.getSchedules().stream()
                     .filter(s -> s.getScheduleDate().equals(request.getDate())
-                            && s.getStartTime().equals(request.getStartTime())
-                            && s.isAvailable())
+                            && s.getStartTime().equals(request.getStartTime()))
                     .findFirst()
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Selected schedule not available"));
+                    .orElse(null);
 
-            schedule.setAvailable(false);
-            schedule.setUpdatedAt(LocalDateTime.now());
+            if (schedule != null) {
+                // Slot exists — make sure it's not already booked
+                if (!schedule.isAvailable()) {
+                    throw new IllegalStateException(
+                            "Doctor already has a booked appointment at this time"
+                    );
+                }
+                // Mark existing slot as booked
+                schedule.setAvailable(false);
+                schedule.setUpdatedAt(LocalDateTime.now());
+
+            } else {
+                // No slot found — custom request, create and record in schedule
+                schedule = DoctorSchedule.builder()
+                        .doctorProfile(doctor)
+                        .scheduleDate(request.getDate())
+                        .startTime(request.getStartTime())
+                        .endTime(request.getEndTime())
+                        .available(false)
+                        .isLocked(false)
+                        .build();
+
+                doctor.getSchedules().add(schedule);
+            }
+
             doctorProfileRepository.save(doctor);
 
             LocalDateTime appointmentDate = LocalDateTime.of(
@@ -244,7 +265,6 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
 
         return dto;
     }
-
     // DTO Mapper
     private AppointmentRequestDto toDto(AppointmentRequest r) {
         return AppointmentRequestDto.builder()
