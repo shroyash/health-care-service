@@ -5,6 +5,7 @@ import com.example.healthcare.dto.request.ReportRequestDto;
 import com.example.healthcare.dto.response.ApiResponse;
 import com.example.healthcare.dto.response.ReportResponseDto;
 import com.example.healthcare.service.ReportService;
+import com.example.healthcare.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -82,9 +83,10 @@ public class ReportController {
                 .build());
     }
 
-    @GetMapping("/patient/{patientId}")
+    @GetMapping("/patient")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByPatient(
-            @PathVariable UUID patientId) {
+            @CookieValue("jwt") String token) {
+        UUID patientId = JwtUtils.extractUserIdFromToken(token);
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)
                 .message("Reports fetched successfully")
@@ -92,9 +94,10 @@ public class ReportController {
                 .build());
     }
 
-    @GetMapping("/doctor/{doctorId}")
+    @GetMapping("/doctor")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByDoctor(
-            @PathVariable UUID doctorId) {
+            @CookieValue("jwt") String token) {
+        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
         List<ReportResponseDto> reportResponseDtos = reportService.getReportsByDoctor(doctorId);
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)

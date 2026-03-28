@@ -8,10 +8,7 @@ import com.example.healthcare.exceptions.DuplicateRequestException;
 import com.example.healthcare.exceptions.ResourceNotFoundException;
 import com.example.healthcare.exceptions.UnauthorizedException;
 import com.example.healthcare.model.*;
-import com.example.healthcare.repository.AppointmentRepository;
-import com.example.healthcare.repository.AppointmentRequestRepository;
-import com.example.healthcare.repository.DoctorProfileRepository;
-import com.example.healthcare.repository.PatientProfileRepository;
+import com.example.healthcare.repository.*;
 import com.example.healthcare.service.AppointmentRequestService;
 import com.example.healthcare.service.EmailService;
 import com.example.healthcare.service.NotificationService;
@@ -36,6 +33,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
     private final DoctorProfileRepository doctorProfileRepository;
     private final NotificationService notificationService;
     private final EmailService emailService;
+    private final ScheduleRepository scheduleRepository;
 
     // CREATE REQUEST
     @Override
@@ -132,7 +130,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
         AppointmentRequestStatus newStatus =
                 AppointmentRequestStatus.valueOf(status.toUpperCase());
 
-        // If already in desired state, return existing data
+        // ✅ If already same status → return
         if (request.getStatus() == newStatus) {
             AppointmentRequestDto dto = toDto(request);
 
@@ -147,7 +145,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
             return dto;
         }
 
-        // Block changing terminal states
+        // ❌ Prevent changing final states
         if (request.getStatus() == AppointmentRequestStatus.APPROVED ||
                 request.getStatus() == AppointmentRequestStatus.REJECTED) {
             throw new IllegalStateException(
@@ -161,12 +159,23 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
 
         AppointmentRequestDto dto = toDto(request);
 
+        // ================== APPROVED FLOW ==================
         if (newStatus == AppointmentRequestStatus.APPROVED) {
+
+            // 🚨 1. Prevent approving past appointments
+            LocalDateTime appointmentDateTime = LocalDateTime.of(
+                    request.getDate(),
+                    request.getStartTime()
+            );
+
+            if (appointmentDateTime.isBefore(LocalDateTime.now())) {
+                throw new IllegalStateException("Cannot approve an appointment in the past");
+            }
 
             PatientProfile patient = patientProfileRepository.findById(request.getPatientId())
                     .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-            // ✅ Check if a schedule slot already exists for this date and time
+            // 🚨 2. Find existing schedule
             DoctorSchedule schedule = doctor.getSchedules().stream()
                     .filter(s -> s.getScheduleDate().equals(request.getDate())
                             && s.getStartTime().equals(request.getStartTime()))
@@ -174,18 +183,18 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                     .orElse(null);
 
             if (schedule != null) {
-                // Slot exists — make sure it's not already booked
                 if (!schedule.isAvailable()) {
                     throw new IllegalStateException(
                             "Doctor already has a booked appointment at this time"
                     );
                 }
-                // Mark existing slot as booked
+
                 schedule.setAvailable(false);
                 schedule.setUpdatedAt(LocalDateTime.now());
 
+                schedule = scheduleRepository.save(schedule); // ✅ ensure persisted
+
             } else {
-                // No slot found — custom request, create and record in schedule
                 schedule = DoctorSchedule.builder()
                         .doctorProfile(doctor)
                         .scheduleDate(request.getDate())
@@ -195,16 +204,10 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                         .isLocked(false)
                         .build();
 
-                doctor.getSchedules().add(schedule);
+                schedule = scheduleRepository.save(schedule); // ✅ ensure persisted
             }
 
-            doctorProfileRepository.save(doctor);
-
-            LocalDateTime appointmentDate = LocalDateTime.of(
-                    request.getDate(),
-                    request.getStartTime()
-            );
-
+            // 🚨 3. Create appointment
             String meetingToken = UUID.randomUUID().toString();
 
             Appointment appointment = Appointment.builder()
@@ -212,7 +215,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                     .patient(patient)
                     .schedule(schedule)
                     .appointmentRequest(request)
-                    .appointmentDate(appointmentDate)
+                    .appointmentDate(appointmentDateTime)
                     .meetingToken(meetingToken)
                     .status(AppointmentStatus.SCHEDULED)
                     .checkupType(DoctorCheckType.GENERAL)
@@ -220,8 +223,9 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
                     .updatedAt(LocalDateTime.now())
                     .build();
 
-            appointmentRepository.save(appointment);
+            appointment = appointmentRepository.save(appointment); // ✅ get ID
 
+            // 🚨 4. Generate meeting link
             String meetingLink = "https://localhost:3000/meet/" + appointment.getId()
                     + "?token=" + meetingToken;
 
@@ -229,13 +233,15 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
             appointment.setUpdatedAt(LocalDateTime.now());
             appointmentRepository.save(appointment);
 
+            // DTO update
             dto.setAppointmentId(appointment.getId());
             dto.setMeetingLink(meetingLink);
             dto.setMeetingToken(meetingToken);
 
+            // 🚨 5. Notifications & Email
             String subject = "Appointment Scheduled";
             String body = "Your appointment with Dr. " + doctor.getFullName()
-                    + " is scheduled for " + appointmentDate
+                    + " is scheduled for " + appointmentDateTime
                     + ".\n\nJoin the meeting using this link:\n" + meetingLink;
 
             emailService.sendEmail(patient.getEmail(), subject, body);
@@ -256,6 +262,7 @@ public class AppointmentRequestServiceImpl implements AppointmentRequestService 
             );
         }
 
+        // ================== STATUS UPDATE NOTIFICATION ==================
         notificationService.sendNotification(
                 request.getPatientId().toString(),
                 "Appointment " + newStatus.name(),
