@@ -5,7 +5,6 @@ import com.example.healthcare.dto.request.ReportRequestDto;
 import com.example.healthcare.dto.response.ApiResponse;
 import com.example.healthcare.dto.response.ReportResponseDto;
 import com.example.healthcare.service.ReportService;
-import com.example.healthcare.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +22,12 @@ public class ReportController {
     @PostMapping
     public ResponseEntity<ApiResponse<ReportResponseDto>> createReport(
             @RequestBody ReportRequestDto request,
-            @CookieValue("jwt") String token) {
+            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+
         return ResponseEntity.ok(ApiResponse.<ReportResponseDto>builder()
                 .status(true)
                 .message("Report created successfully")
-                .data(reportService.createReport(request, token))
+                .data(reportService.createReport(request, doctorId))  // ✅ pass UUID not token
                 .build());
     }
 
@@ -35,22 +35,24 @@ public class ReportController {
     public ResponseEntity<ApiResponse<ReportResponseDto>> updateReport(
             @PathVariable Long reportId,
             @RequestBody ReportRequestDto request,
-            @CookieValue("jwt") String token) {
+            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+
         return ResponseEntity.ok(ApiResponse.<ReportResponseDto>builder()
                 .status(true)
                 .message("Report updated successfully")
-                .data(reportService.updateReport(reportId, request, token))
+                .data(reportService.updateReport(reportId, request, doctorId))  // ✅
                 .build());
     }
 
     @PatchMapping("/{reportId}/finalize")
     public ResponseEntity<ApiResponse<ReportResponseDto>> finalizeReport(
             @PathVariable Long reportId,
-            @CookieValue("jwt") String token) {
+            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+
         return ResponseEntity.ok(ApiResponse.<ReportResponseDto>builder()
                 .status(true)
                 .message("Report finalized successfully")
-                .data(reportService.finalizeReport(reportId, token))
+                .data(reportService.finalizeReport(reportId, doctorId))  // ✅
                 .build());
     }
 
@@ -85,8 +87,8 @@ public class ReportController {
 
     @GetMapping("/patient")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByPatient(
-            @CookieValue("jwt") String token) {
-        UUID patientId = JwtUtils.extractUserIdFromToken(token);
+            @RequestHeader("X-User-Id") UUID patientId) {  // ✅
+
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)
                 .message("Reports fetched successfully")
@@ -96,13 +98,12 @@ public class ReportController {
 
     @GetMapping("/doctor")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByDoctor(
-            @CookieValue("jwt") String token) {
-        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
-        List<ReportResponseDto> reportResponseDtos = reportService.getReportsByDoctor(doctorId);
+            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)
                 .message("Reports fetched successfully")
-                .data(reportResponseDtos)
+                .data(reportService.getReportsByDoctor(doctorId))
                 .build());
     }
 }

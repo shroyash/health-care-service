@@ -13,7 +13,6 @@ import com.example.healthcare.model.MedicalReport;
 import com.example.healthcare.model.ReportMedicine;
 import com.example.healthcare.repository.AppointmentRepository;
 import com.example.healthcare.repository.ReportRepository;
-import com.example.healthcare.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ReportService {
 
     private final ReportRepository reportRepository;
@@ -32,11 +32,8 @@ public class ReportService {
     private final DoctorProfileService doctorProfileService;
     private final PatientProfileService patientProfileService;
 
-
     @Transactional
-    public ReportResponseDto createReport(ReportRequestDto request, String token) {
-        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
-
+    public ReportResponseDto createReport(ReportRequestDto request, UUID doctorId) {  // ✅ UUID not token
         Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
@@ -58,27 +55,20 @@ public class ReportService {
                 .reportType(request.getReportType())
                 .status(ReportStatus.DRAFT)
                 .medicines(medicines)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+                .build();  // ✅ remove manual createdAt/updatedAt — use JPA auditing
 
         medicines.forEach(m -> m.setMedicalReport(report));
 
         MedicalReport saved = reportRepository.save(report);
 
-        // Mark appointment as COMPLETED when doctor creates a report
         appointment.setStatus(AppointmentStatus.COMPLETED);
-        appointment.setUpdatedAt(LocalDateTime.now());
         appointmentRepository.save(appointment);
 
         return mapToResponseDto(saved);
     }
 
-    // ── Update ────────────────────────────────────────────
     @Transactional
-    public ReportResponseDto updateReport(Long reportId, ReportRequestDto request, String token) {
-        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
-
+    public ReportResponseDto updateReport(Long reportId, ReportRequestDto request, UUID doctorId) {  // ✅
         MedicalReport report = getReportOrThrow(reportId);
 
         if (!report.getDoctorId().equals(doctorId)) {
@@ -95,7 +85,6 @@ public class ReportService {
         report.setTreatmentPlan(request.getTreatmentPlan());
         report.setNotes(request.getNotes());
         report.setReportType(request.getReportType());
-        report.setUpdatedAt(LocalDateTime.now());
 
         report.getMedicines().clear();
         report.getMedicines().addAll(mapToMedicineEntities(request.getMedicines()));
@@ -104,11 +93,8 @@ public class ReportService {
         return mapToResponseDto(reportRepository.save(report));
     }
 
-    // ── Finalize ──────────────────────────────────────────
     @Transactional
-    public ReportResponseDto finalizeReport(Long reportId, String token) {
-        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
-
+    public ReportResponseDto finalizeReport(Long reportId, UUID doctorId) {  // ✅
         MedicalReport report = getReportOrThrow(reportId);
 
         if (!report.getDoctorId().equals(doctorId)) {
@@ -121,12 +107,11 @@ public class ReportService {
 
         report.setStatus(ReportStatus.FINALIZED);
         report.setFinalizedAt(LocalDateTime.now());
-        report.setUpdatedAt(LocalDateTime.now());
 
         return mapToResponseDto(reportRepository.save(report));
     }
 
-    // ── Get All ───────────────────────────────────────────
+    @Transactional(readOnly = true)
     public List<ReportResponseDto> getAllReports() {
         return reportRepository.findAll()
                 .stream()
@@ -134,19 +119,19 @@ public class ReportService {
                 .collect(Collectors.toList());
     }
 
-    // ── Get By Id ─────────────────────────────────────────
+    @Transactional(readOnly = true)
     public ReportResponseDto getReportById(Long reportId) {
         return mapToResponseDto(getReportOrThrow(reportId));
     }
 
-    // ── Get By Appointment ────────────────────────────────
+    @Transactional(readOnly = true)
     public ReportResponseDto getReportByAppointmentId(Long appointmentId) {
         MedicalReport report = reportRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found for this appointment"));
         return mapToResponseDto(report);
     }
 
-    // ── Get By Patient ────────────────────────────────────
+    @Transactional(readOnly = true)
     public List<ReportResponseDto> getReportsByPatient(UUID patientId) {
         return reportRepository.findByPatientId(patientId)
                 .stream()
@@ -154,7 +139,7 @@ public class ReportService {
                 .collect(Collectors.toList());
     }
 
-    // ── Get By Doctor ─────────────────────────────────────
+    @Transactional(readOnly = true)
     public List<ReportResponseDto> getReportsByDoctor(UUID doctorId) {
         return reportRepository.findByDoctorId(doctorId)
                 .stream()
@@ -162,32 +147,38 @@ public class ReportService {
                 .collect(Collectors.toList());
     }
 
-    // ── Private Helpers ───────────────────────────────────
+    // ── private helpers ──────────────────────────────────────────
+
     private MedicalReport getReportOrThrow(Long reportId) {
         return reportRepository.findById(reportId)
                 .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
     }
 
     private List<ReportMedicine> mapToMedicineEntities(List<ReportMedicineDto> dtos) {
-        return dtos.stream().map(dto -> ReportMedicine.builder()
-                .name(dto.getName())
-                .dosage(dto.getDosage())
-                .frequency(dto.getFrequency())
-                .duration(dto.getDuration())
-                .instructions(dto.getInstructions())
-                .createdAt(LocalDateTime.now())
-                .build()
-        ).collect(Collectors.toList());
+        return dtos.stream()
+                .map(dto -> ReportMedicine.builder()
+                        .name(dto.getName())
+                        .dosage(dto.getDosage())
+                        .frequency(dto.getFrequency())
+                        .duration(dto.getDuration())
+                        .instructions(dto.getInstructions())
+                        .build())  // ✅ remove manual createdAt
+                .collect(Collectors.toList());
     }
 
     private ReportResponseDto mapToResponseDto(MedicalReport report) {
+        String patientName = patientProfileService
+                .getPatientProfile(report.getPatientId()).getFullName();
+        String doctorName = doctorProfileService
+                .getDoctorProfile(report.getDoctorId()).getFullName();
+
         ReportResponseDto dto = new ReportResponseDto();
         dto.setId(report.getId());
         dto.setAppointmentId(report.getAppointment().getId());
         dto.setPatientId(report.getPatientId());
         dto.setDoctorId(report.getDoctorId());
-        dto.setPatientName(patientProfileService.getPatientProfile(report.getPatientId()).getFullName());
-        dto.setDoctorName(doctorProfileService.getDoctorProfile(report.getDoctorId()).getFullName());
+        dto.setPatientName(patientName);
+        dto.setDoctorName(doctorName);
         dto.setTitle(report.getTitle());
         dto.setDiagnosis(report.getDiagnosis());
         dto.setSymptoms(report.getSymptoms());
@@ -199,15 +190,19 @@ public class ReportService {
         dto.setFinalizedAt(report.getFinalizedAt());
         dto.setCreatedAt(report.getCreatedAt());
         dto.setUpdatedAt(report.getUpdatedAt());
-        dto.setMedicines(report.getMedicines().stream().map(m -> {
-            ReportMedicineDto medicineDto = new ReportMedicineDto();
-            medicineDto.setName(m.getName());
-            medicineDto.setDosage(m.getDosage());
-            medicineDto.setFrequency(m.getFrequency());
-            medicineDto.setDuration(m.getDuration());
-            medicineDto.setInstructions(m.getInstructions());
-            return medicineDto;
-        }).collect(Collectors.toList()));
+        dto.setMedicines(report.getMedicines().stream()
+                .map(this::toMedicineDto)  // ✅ extracted
+                .collect(Collectors.toList()));
+        return dto;
+    }
+
+    private ReportMedicineDto toMedicineDto(ReportMedicine m) {
+        ReportMedicineDto dto = new ReportMedicineDto();
+        dto.setName(m.getName());
+        dto.setDosage(m.getDosage());
+        dto.setFrequency(m.getFrequency());
+        dto.setDuration(m.getDuration());
+        dto.setInstructions(m.getInstructions());
         return dto;
     }
 }
