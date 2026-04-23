@@ -22,12 +22,12 @@ public class ReportController {
     @PostMapping
     public ResponseEntity<ApiResponse<ReportResponseDto>> createReport(
             @RequestBody ReportRequestDto request,
-            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+            @RequestHeader("X-User-Id") UUID doctorId) {
 
         return ResponseEntity.ok(ApiResponse.<ReportResponseDto>builder()
                 .status(true)
                 .message("Report created successfully")
-                .data(reportService.createReport(request, doctorId))  // ✅ pass UUID not token
+                .data(reportService.createReport(request, doctorId))
                 .build());
     }
 
@@ -35,24 +35,24 @@ public class ReportController {
     public ResponseEntity<ApiResponse<ReportResponseDto>> updateReport(
             @PathVariable Long reportId,
             @RequestBody ReportRequestDto request,
-            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+            @RequestHeader("X-User-Id") UUID doctorId) {
 
         return ResponseEntity.ok(ApiResponse.<ReportResponseDto>builder()
                 .status(true)
                 .message("Report updated successfully")
-                .data(reportService.updateReport(reportId, request, doctorId))  // ✅
+                .data(reportService.updateReport(reportId, request, doctorId))
                 .build());
     }
 
     @PatchMapping("/{reportId}/finalize")
     public ResponseEntity<ApiResponse<ReportResponseDto>> finalizeReport(
             @PathVariable Long reportId,
-            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+            @RequestHeader("X-User-Id") UUID doctorId) {
 
         return ResponseEntity.ok(ApiResponse.<ReportResponseDto>builder()
                 .status(true)
                 .message("Report finalized successfully")
-                .data(reportService.finalizeReport(reportId, doctorId))  // ✅
+                .data(reportService.finalizeReport(reportId, doctorId))
                 .build());
     }
 
@@ -87,7 +87,7 @@ public class ReportController {
 
     @GetMapping("/patient")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByPatient(
-            @RequestHeader("X-User-Id") UUID patientId) {  // ✅
+            @RequestHeader("X-User-Id") UUID patientId) {
 
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)
@@ -98,7 +98,7 @@ public class ReportController {
 
     @GetMapping("/doctor")
     public ResponseEntity<ApiResponse<List<ReportResponseDto>>> getReportsByDoctor(
-            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+            @RequestHeader("X-User-Id") UUID doctorId) {
 
         return ResponseEntity.ok(ApiResponse.<List<ReportResponseDto>>builder()
                 .status(true)

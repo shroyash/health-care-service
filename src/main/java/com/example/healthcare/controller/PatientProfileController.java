@@ -1,13 +1,11 @@
 package com.example.healthcare.controller;
 
+import com.example.healthcare.dto.request.PatientProfileUpdateDto;
 import com.example.healthcare.dto.response.ApiResponse;
 import com.example.healthcare.dto.response.PatientProfileDTO;
-import com.example.healthcare.dto.request.PatientProfileUpdateDto;
 import com.example.healthcare.service.FileStorageService;
 import com.example.healthcare.service.PatientProfileService;
-import com.example.healthcare.utils.JwtUtils;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,63 +14,49 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/patient-profiles")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PatientProfileController {
 
     private final PatientProfileService patientProfileService;
     private final FileStorageService fileStorageService;
 
-
-
     @GetMapping
     public ResponseEntity<ApiResponse<PatientProfileDTO>> getPatientProfile(
-            @CookieValue("jwt") String token
-    ) {
-        UUID userId = JwtUtils.extractUserIdFromToken(token);
+            @RequestHeader("X-User-Id") UUID userId) {
 
-        PatientProfileDTO patientProfileDTO =
-                patientProfileService.getPatientProfile(userId);
-
-        ApiResponse<PatientProfileDTO> response = ApiResponse.<PatientProfileDTO>builder()
+        return ResponseEntity.ok(ApiResponse.<PatientProfileDTO>builder()
                 .status(true)
                 .message("Patient profile fetch successful")
-                .data(patientProfileDTO)
-                .build();
-
-        return ResponseEntity.ok(response);
+                .data(patientProfileService.getPatientProfile(userId))
+                .build());
     }
 
-
-    // Update patient profile info
     @PutMapping
-    public ResponseEntity<ApiResponse<?>> updatePatientProfile(
+    public ResponseEntity<ApiResponse<Void>> updatePatientProfile(
             @RequestBody PatientProfileUpdateDto dto,
-            @CookieValue(name = "jwt", required = true) String token) {
+            @RequestHeader("X-User-Id") UUID patientId) {
 
-        UUID patientId = JwtUtils.extractUserIdFromToken(token);
         patientProfileService.updatePatientProfile(patientId, dto);
-        ApiResponse<Void> response = new ApiResponse<>(true, "Patient profile updated successfully!", null);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .status(true)
+                .message("Patient profile updated successfully")
+                .data(null)
+                .build());
     }
 
-    // Upload patient profile image
-    @PostMapping("/{patientId}/upload-img")
+    @PostMapping("/upload-img")
     public ResponseEntity<ApiResponse<String>> uploadProfileImg(
-            @PathVariable UUID patientId,
+            @RequestHeader("X-User-Id") UUID patientId,
             @RequestParam("file") MultipartFile file) {
 
-            String fileUrl = fileStorageService.saveFile(file);
+        String fileUrl = fileStorageService.saveFile(file);
+        patientProfileService.updateProfileImage(patientId, fileUrl);
 
-            patientProfileService.updateProfileImage(patientId, fileUrl);
-
-            ApiResponse<String> response = ApiResponse.<String>builder()
-                    .status(true)
-                    .message("Patient profile image uploaded successfully")
-                    .data(fileUrl)
-                    .build();
-
-            return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .status(true)
+                .message("Patient profile image uploaded successfully")
+                .data(fileUrl)
+                .build());
     }
-
-
 }

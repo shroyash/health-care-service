@@ -4,13 +4,12 @@ import com.example.healthcare.dto.request.MedicineRequestDto;
 import com.example.healthcare.dto.response.ApiResponse;
 import com.example.healthcare.dto.response.MedicineResponseDto;
 import com.example.healthcare.service.MedicineService;
-import com.example.healthcare.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/medicines")
 @RequiredArgsConstructor
@@ -18,51 +17,60 @@ public class MedicineController {
 
     private final MedicineService medicineService;
 
-    // All roles can view
     @GetMapping
-    public ApiResponse<List<MedicineResponseDto>> getAllMedicines() {
-        return new ApiResponse<>(true, "Medicines fetched", medicineService.getAllMedicines());
+    public ResponseEntity<ApiResponse<List<MedicineResponseDto>>> getAllMedicines() {
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Medicines fetched",
+                        medicineService.getAllMedicines())
+        );
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<MedicineResponseDto> getMedicine(@PathVariable Long id) {
-        return new ApiResponse<>(true, "Medicine fetched", medicineService.getMedicineById(id));
+    public ResponseEntity<ApiResponse<MedicineResponseDto>> getMedicine(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Medicine fetched",
+                        medicineService.getMedicineById(id))
+        );
     }
 
-    // Doctor and Admin can add
     @PostMapping
-    public ApiResponse<MedicineResponseDto> addMedicine(
+    public ResponseEntity<ApiResponse<MedicineResponseDto>> addMedicine(
             @RequestBody MedicineRequestDto dto,
-            @CookieValue("jwt") String token
-    ) {
-        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
-        return new ApiResponse<>(true, "Medicine added", medicineService.addMedicine(dto, doctorId));
+            @RequestHeader("X-User-Id") UUID doctorId) {  // ✅
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Medicine added",
+                        medicineService.addMedicine(dto, doctorId))
+        );
     }
 
-    // Doctor can edit their own, Admin can edit all
     @PutMapping("/{id}")
-    public ApiResponse<MedicineResponseDto> updateMedicine(
+    public ResponseEntity<ApiResponse<MedicineResponseDto>> updateMedicine(
             @PathVariable Long id,
             @RequestBody MedicineRequestDto dto,
-            @CookieValue("jwt") String token
-    ) {
-        UUID doctorId = JwtUtils.extractUserIdFromToken(token);
-        List<String> roles = JwtUtils.extractRolesFromToken(token);
+            @RequestHeader("X-User-Id") UUID doctorId,
+            @RequestHeader("X-User-Roles") String roles) {
+
         boolean isAdmin = roles.contains("ROLE_ADMIN");
-        return new ApiResponse<>(true, "Medicine updated", medicineService.updateMedicine(id, dto, doctorId, isAdmin));
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Medicine updated",
+                        medicineService.updateMedicine(id, dto, doctorId, isAdmin))
+        );
     }
 
-    // Only Admin can delete
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteMedicine(
+    public ResponseEntity<ApiResponse<Void>> deleteMedicine(
             @PathVariable Long id,
-            @CookieValue("jwt") String token
-    ) {
-        List<String> roles = JwtUtils.extractRolesFromToken(token);
-        if (!roles.contains("ROLE_ADMIN")) {
-            throw new RuntimeException("Only admin can delete medicines");
-        }
-        medicineService.deleteMedicine(id);
-        return new ApiResponse<>(true, "Medicine deleted", null);
+            @RequestHeader("X-User-Roles") String roles) {
+
+        boolean isAdmin = roles.contains("ROLE_ADMIN");
+        medicineService.deleteMedicine(id, isAdmin);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Medicine deleted", null)
+        );
     }
 }

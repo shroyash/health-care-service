@@ -33,7 +33,7 @@ public class ReportService {
     private final PatientProfileService patientProfileService;
 
     @Transactional
-    public ReportResponseDto createReport(ReportRequestDto request, UUID doctorId) {  // ✅ UUID not token
+    public ReportResponseDto createReport(ReportRequestDto request, UUID doctorId) {
         Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
@@ -55,7 +55,7 @@ public class ReportService {
                 .reportType(request.getReportType())
                 .status(ReportStatus.DRAFT)
                 .medicines(medicines)
-                .build();  // ✅ remove manual createdAt/updatedAt — use JPA auditing
+                .build();
 
         medicines.forEach(m -> m.setMedicalReport(report));
 
@@ -162,7 +162,7 @@ public class ReportService {
                         .frequency(dto.getFrequency())
                         .duration(dto.getDuration())
                         .instructions(dto.getInstructions())
-                        .build())  // ✅ remove manual createdAt
+                        .build())
                 .collect(Collectors.toList());
     }
 
@@ -191,7 +191,7 @@ public class ReportService {
         dto.setCreatedAt(report.getCreatedAt());
         dto.setUpdatedAt(report.getUpdatedAt());
         dto.setMedicines(report.getMedicines().stream()
-                .map(this::toMedicineDto)  // ✅ extracted
+                .map(this::toMedicineDto)
                 .collect(Collectors.toList()));
         return dto;
     }

@@ -50,15 +50,15 @@ public class AdminDashboardController {
                 new ApiResponse<>(true, "All Doctors fetched successfully", doctors)
         );
     }
-    @GetMapping("/patients")
-    public ResponseEntity<ApiResponse<List<PatientProfileDTO>>> getAllPatients() {
-
-        List<PatientProfileDTO> patients = patientProfileService.getAllPatients();
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "All patients fetched successfully", patients)
-        );
-    }
+//    @GetMapping("/patients")
+//    public ResponseEntity<ApiResponse<List<PatientProfileDTO>>> getAllPatients() {
+//
+//        List<PatientProfileDTO> patients = patientProfileService.getAllPatients();
+//
+//        return ResponseEntity.ok(
+//                new ApiResponse<>(true, "All patients fetched successfully", patients)
+//        );
+//    }
 
     @GetMapping("/patients-stats")
     public ResponseEntity<ApiResponse<PatientsStats>> getPatientsStats() {
@@ -81,21 +81,21 @@ public class AdminDashboardController {
         return ResponseEntity.ok(response);
     }
 
-    // Suspend a patient
-    @PutMapping("/suspend/{patientId}")
-    public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable UUID patientId) {
-        var updatedPatient = patientProfileService.suspendPatient(patientId);
-        ApiResponse<?> response = new ApiResponse<>(true, "Patient suspended successfully", updatedPatient);
-        return ResponseEntity.ok(response);
-    }
-
-    // Restore a suspended patient
-    @PutMapping("/restore/{patientId}")
-    public ResponseEntity<ApiResponse<?>> restorePatient(@PathVariable UUID patientId) {
-        var updatedPatient = patientProfileService.restorePatient(patientId);
-        ApiResponse<?> response = new ApiResponse<>(true, "Patient restored successfully", updatedPatient);
-        return ResponseEntity.ok(response);
-    }
+//    // Suspend a patient
+//    @PutMapping("/suspend/{patientId}")
+//    public ResponseEntity<ApiResponse<?>> suspendPatient(@PathVariable UUID patientId) {
+//        var updatedPatient = patientProfileService.suspendPatient(patientId);
+//        ApiResponse<?> response = new ApiResponse<>(true, "Patient suspended successfully", updatedPatient);
+//        return ResponseEntity.ok(response);
+//    }
+//
+//    // Restore a suspended patient
+//    @PutMapping("/restore/{patientId}")
+//    public ResponseEntity<ApiResponse<?>> restorePatient(@PathVariable UUID patientId) {
+//        var updatedPatient = patientProfileService.restorePatient(patientId);
+//        ApiResponse<?> response = new ApiResponse<>(true, "Patient restored successfully", updatedPatient);
+//        return ResponseEntity.ok(response);
+//    }
 
     @PutMapping("/{doctorId}/suspend")
     public ResponseEntity<ApiResponse<DoctorProfileResponseDto>> suspendDoctor(@PathVariable UUID doctorId) {
