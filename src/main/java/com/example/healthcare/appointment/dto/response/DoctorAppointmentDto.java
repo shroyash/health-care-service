@@ -1,0 +1,30 @@
+package com.example.healthcare.appointment.dto.response;
+
+
+import com.example.healthcare.appointment.enums.AppointmentStatus;
+import com.example.healthcare.common.enums.DoctorCheckType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.UUID;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class DoctorAppointmentDto {
+
+    private Long appointmentId;
+    private UUID patientId;
+    private String patientName;
+    private LocalDateTime appointmentDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private DoctorCheckType checkupType;
+    private String meetingLink;
+    private AppointmentStatus status;
+}
