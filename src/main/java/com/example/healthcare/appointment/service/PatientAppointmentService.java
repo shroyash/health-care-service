@@ -59,4 +59,9 @@ public class PatientAppointmentService {
                 strategy.getEndDateTime());
     }
 
+    public List<StatusCountResponseDto> getAppointmentStatusCount(UUID patientId) {
+        return appointmentRepository.getAppointmentStatusCountByPatient(patientId);
+    }
+
+
 }

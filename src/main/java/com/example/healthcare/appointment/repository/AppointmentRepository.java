@@ -264,4 +264,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     int cancelExpiredForPatient(
             @Param("patientId") UUID patientId,
             @Param("now") LocalDateTime now);
+
+    @Query("""
+    SELECT new com.example.healthcare.appointment.dto.response.StatusCountResponseDto(
+        a.status,
+        COUNT(a)
+    )
+    FROM Appointment a
+    WHERE a.patient.id = :patientId
+    GROUP BY a.status
+""")
+    List<StatusCountResponseDto> getAppointmentStatusCountByPatient(UUID patientId);
+
 }

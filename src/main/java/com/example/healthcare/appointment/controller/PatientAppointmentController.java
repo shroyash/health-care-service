@@ -60,4 +60,18 @@ public class PatientAppointmentController {
                 patientAppointmentService.getByRange(patientId, strategy)));
     }
 
+    @GetMapping("/status-count")
+    public ResponseEntity<ApiResponse<List<StatusCountResponseDto>>> getStatusCount(
+            @RequestHeader("X-User-Id") UUID patientId) {
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Status count fetched successfully",
+                        patientAppointmentService.getAppointmentStatusCount(patientId)
+                )
+        );
+    }
+
+
 }

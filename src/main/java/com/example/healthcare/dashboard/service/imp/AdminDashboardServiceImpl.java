@@ -1,6 +1,7 @@
 
 package com.example.healthcare.dashboard.service.imp;
 
+import com.example.healthcare.appointment.dto.response.WeeklyAppointmentCountDto;
 import com.example.healthcare.appointment.repository.AppointmentRepository;
 import com.example.healthcare.dashboard.dto.AdminDashboardStatsDto;
 import com.example.healthcare.dashboard.feign.AuthServiceClient;
@@ -11,9 +12,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -51,5 +54,15 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             log.error("Failed to fetch pending approvals: {}", e.getMessage());
             return 0L;
         }
+    }
+
+    @Override
+    public List<WeeklyAppointmentCountDto> getWeeklyAppointmentCounts() {
+        LocalDateTime start = LocalDate.now()
+                .with(DayOfWeek.MONDAY)
+                .atStartOfDay();
+        LocalDateTime end = start.plusWeeks(1);
+
+        return appointmentRepository.countByDayOfWeek(start, end);
     }
 }

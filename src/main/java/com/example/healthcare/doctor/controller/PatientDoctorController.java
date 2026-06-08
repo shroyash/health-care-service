@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/dashboard/patient/doctors")
+@RequestMapping("/api/appointments/patient/doctors")
 @RequiredArgsConstructor
 public class PatientDoctorController {
 
@@ -36,7 +36,6 @@ public class PatientDoctorController {
                 .build());
     }
 
-    // Patient searches by experience
     @GetMapping("/experience")
     public ResponseEntity<ApiResponse<List<DoctorProfileResponseDto>>> getByExperience(
             @RequestParam String level) {
